@@ -81,6 +81,7 @@ config nodes 'myshunt'
 	option Direct '_direct'
 	option GooglePlay '_default'
 	option Proxy '_default'
+	option GFW '_default'
 	option China '_direct'
 	option QUIC '_blackhole'
 	option default_node '_direct'
@@ -254,6 +255,11 @@ config shunt_rules 'Proxy'
 2606:4700:4700::1111
 2606:4700:4700::1001
 '
+
+config shunt_rules 'GFW'
+	option remarks 'GFW'
+	option network 'tcp,udp'
+	option domain_list 'geosite:gfw'
 
 config shunt_rules 'China'
 	option remarks 'China'
