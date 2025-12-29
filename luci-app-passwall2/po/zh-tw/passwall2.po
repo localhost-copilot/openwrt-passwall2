@@ -781,6 +781,9 @@ msgstr "注意，當使用TCP健康檢查時負載均衡的節點配置參數必
 msgid "Node Address"
 msgstr "節點地址"
 
+msgid "Node address cannot be empty."
+msgstr "節點地址不能為空。"
+
 msgid "Node Port"
 msgstr "節點端口"
 
