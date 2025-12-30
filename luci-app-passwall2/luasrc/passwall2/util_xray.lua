@@ -1420,7 +1420,7 @@ function gen_config(var)
 					address = remote_dns_udp_server,
 					port = tonumber(remote_dns_udp_port) or 53,
 					network = _remote_dns_proto or "tcp",
-					nonIPQuery = "drop"
+					nonIPQuery = "reject"
 				}
 			}
 			local type_dns = direct_type_dns
@@ -1986,7 +1986,7 @@ function gen_dns_config(var)
 				address = other_type_dns_server or "1.1.1.1",
 				port = other_type_dns_port or 53,
 				network = other_type_dns_proto or "tcp",
-				nonIPQuery = "drop"
+				nonIPQuery = "reject"
 			}
 		})
 	
