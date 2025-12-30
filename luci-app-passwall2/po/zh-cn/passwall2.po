@@ -1165,6 +1165,12 @@ msgstr "本地端口"
 msgid "Fast Open"
 msgstr "快速打开"
 
+msgid "Pre-connections"
+msgstr "预连接"
+
+msgid "Number of early established connections to reduce latency."
+msgstr "预连接的数量，用于降低延迟。"
+
 msgid "plugin"
 msgstr "插件"
 
