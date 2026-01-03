@@ -853,7 +853,7 @@ function gen_config(var)
 		end
 		table.insert(balancers, {
 			tag = balancer_tag,
-			selector = valid_nodes,
+			selector = api.clone(valid_nodes),
 			fallbackTag = fallback_node_tag,
 			strategy = strategy
 		})
