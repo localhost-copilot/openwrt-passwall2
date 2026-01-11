@@ -1552,18 +1552,6 @@ msgstr "缓衝区大小"
 msgid "Buffer size for every connection (kB)"
 msgstr "每一個連接的缓衝区大小（kB）"
 
-msgid "Custom geoip Path"
-msgstr "自定义geoip文件路径"
-
-msgid "Custom geoip URL"
-msgstr "自定义geoip文件更新鏈接"
-
-msgid "Custom geosite Path"
-msgstr "自定义geosite文件路径"
-
-msgid "Custom geosite URL"
-msgstr "自定义geosite文件更新鏈接"
-
 msgid "Handshake Timeout"
 msgstr "握手超時 "
 
@@ -1575,12 +1563,6 @@ msgstr "端口跳跃時間 "
 
 msgid "HeartbeatPeriod(second)"
 msgstr "心跳周期（單位：秒）"
-
-msgid "Remove resource files"
-msgstr "刪除资源文件"
-
-msgid "Sing-Box will automatically download resource files when starting, you can use this feature achieve upgrade resource files."
-msgstr "Sing-Box 会在啟動時自動下載资源文件，您可以使用此功能實现升級资源文件。"
 
 msgid "Override the connection destination address"
 msgstr "覆盖連接目標地址"

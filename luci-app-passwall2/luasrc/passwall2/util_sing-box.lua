@@ -932,17 +932,7 @@ function gen_config(var)
 	local singbox_settings = uci:get_all(appname, "@global_singbox[0]") or {}
 
 	local route = {
-		rules = {},
-		geoip = {
-			path = singbox_settings.geoip_path or "/usr/share/singbox/geoip.db",
-			download_url = singbox_settings.geoip_url or nil,
-			download_detour = nil,
-		},
-		geosite = {
-			path = singbox_settings.geosite_path or "/usr/share/singbox/geosite.db",
-			download_url = singbox_settings.geosite_url or nil,
-			download_detour = nil,
-		},
+		rules = {}
 	}
 
 	local experimental = nil
@@ -1370,7 +1360,6 @@ function gen_config(var)
 					end
 
 					if e.source then
-						local source_geoip = {}
 						local source_ip_cidr = {}
 						local source_is_private = false
 						string.gsub(e.source, '[^' .. " " .. ']+', function(w)
@@ -1378,14 +1367,11 @@ function gen_config(var)
 								local _geoip = w:sub(1 + #"geoip:")
 								if _geoip == "private" then
 									source_is_private = true
-								else
-									table.insert(source_geoip, w)
 								end
 							else
 								table.insert(source_ip_cidr, w)
 							end
 						end)
-						rule.source_geoip = #source_geoip > 0 and source_geoip or nil
 						rule.source_ip_cidr = #source_ip_cidr > 0 and source_ip_cidr or nil
 						rule.source_ip_is_private = source_is_private and true or nil
 					end
@@ -1427,7 +1413,6 @@ function gen_config(var)
 							domain_suffix = {},
 							domain_keyword = {},
 							domain_regex = {},
-							geosite = {},
 							rule_set = {},
 							invert = e.invert == "1" and true or nil
 						}
@@ -1435,7 +1420,6 @@ function gen_config(var)
 							if w:find("#") == 1 then return end
 							if w:find("geosite:") == 1 then
 								local _geosite = w:sub(1 + #"geosite:")
-								table.insert(domain_table.geosite, _geosite)
 								local t = rule_set_add("local:" .. srss_path .. "geosite-" .. _geosite .. ".srs")
 								if t then
 									geosite_all_tag[_geosite] = true
@@ -1463,7 +1447,6 @@ function gen_config(var)
 						rule.domain_suffix = #domain_table.domain_suffix > 0 and domain_table.domain_suffix or nil
 						rule.domain_keyword = #domain_table.domain_keyword > 0 and domain_table.domain_keyword or nil
 						rule.domain_regex = #domain_table.domain_regex > 0 and domain_table.domain_regex or nil
-						rule.geosite = #domain_table.geosite > 0 and domain_table.geosite or nil
 						rule.rule_set = #domain_table.rule_set > 0 and domain_table.rule_set or nil
 
 						if outboundTag then
@@ -1473,13 +1456,11 @@ function gen_config(var)
 
 					if e.ip_list then
 						local ip_cidr = {}
-						local geoip = {}
 						local is_private = false
 						string.gsub(e.ip_list, '[^' .. "\r\n" .. ']+', function(w)
 							if w:find("#") == 1 then return end
 							if w:find("geoip:") == 1 then
 								local _geoip = w:sub(1 + #"geoip:")
-								table.insert(geoip, _geoip)
 								if _geoip == "private" then
 									is_private = true
 								else
@@ -1502,7 +1483,6 @@ function gen_config(var)
 
 						rule.ip_is_private = is_private and true or nil
 						rule.ip_cidr = #ip_cidr > 0 and ip_cidr or nil
-						rule.geoip = #geoip > 0 and geoip or nil
 					end
 					rule.rule_set = #rule_set > 0 and rule_set or nil
 					rule.invert = e.invert == "1" and true or nil
@@ -1671,14 +1651,13 @@ function gen_config(var)
 		-- DNS in order of shunt
 		if dns_domain_rules and #dns_domain_rules > 0 then
 			for index, value in ipairs(dns_domain_rules) do
-				if value.outboundTag and (value.domain or value.domain_suffix or value.domain_keyword or value.domain_regex or value.geosite or value.rule_set) then
+				if value.outboundTag and (value.domain or value.domain_suffix or value.domain_keyword or value.domain_regex or value.rule_set) then
 					local dns_rule = {
 						server = value.outboundTag,
 						domain = (value.domain and #value.domain > 0) and value.domain or nil,
 						domain_suffix = (value.domain_suffix and #value.domain_suffix > 0) and value.domain_suffix or nil,
 						domain_keyword = (value.domain_keyword and #value.domain_keyword > 0) and value.domain_keyword or nil,
 						domain_regex = (value.domain_regex and #value.domain_regex > 0) and value.domain_regex or nil,
-						geosite = (value.geosite and #value.geosite > 0) and value.geosite or nil,
 						rule_set = (value.rule_set and #value.rule_set > 0) and value.rule_set or nil,
 						disable_cache = false,
 						invert = value.invert,
@@ -1898,24 +1877,6 @@ function gen_config(var)
 				table.insert(config.route.rules, {
 					action = "reject"
 				})
-			end
-		end
-		if version_ge_1_12_0 then
-			-- removed geo in version 1.12
-			config.route.geoip = nil
-			config.route.geosite = nil
-			if config.route and config.route.rules then
-				for i = #config.route.rules, 1, -1 do
-					local value = config.route.rules[i]
-					value.geoip = nil
-					value.geosite = nil
-				end
-			end
-			if config.dns and config.dns.rules then
-				for i = #config.dns.rules, 1, -1 do
-					local value = config.dns.rules[i]
-					value.geosite = nil
-				end
 			end
 		end
 		return jsonc.stringify(config, 1)
