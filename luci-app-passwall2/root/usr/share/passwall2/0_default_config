@@ -112,9 +112,7 @@ lv.queniujq.cn
 alibaba.cdn.steampipe.steamcontent.com
 
 # CN Game geosite domain
-geosite:category-games@cn
-rule-set:remote:https://raw.githubusercontent.com/lyc8503/sing-box-rules/rule-set-geosite/geosite-category-games%40cn.srs
-'
+geosite:category-games@cn'
 
 	option ip_list '# Steam IP
 45.121.184.0/24
@@ -183,8 +181,7 @@ steamcloud-sydney.storage.googleapis.com
 steamcloud-taiwan.storage.googleapis.com
 steamcloud-eu.storage.googleapis.com
 
-geosite:category-games
-rule-set:remote:https://raw.githubusercontent.com/lyc8503/sing-box-rules/rule-set-geosite/geosite-category-games.srs'
+geosite:category-games'
 
 config shunt_rules 'Direct'
 	option network 'tcp,udp'
@@ -221,14 +218,12 @@ domain:xn--ngstr-lra8j.com'
 config shunt_rules 'Netflix'
 	option remarks 'Netflix'
 	option network 'tcp,udp'
-	option domain_list 'geosite:netflix
-rule-set:remote:https://raw.githubusercontent.com/lyc8503/sing-box-rules/rule-set-geosite/geosite-netflix.srs'
+	option domain_list 'geosite:netflix'
 	
 config shunt_rules 'OpenAI'
 	option remarks 'OpenAI'
 	option network 'tcp,udp'
-	option domain_list 'geosite:openai
-rule-set:remote:https://raw.githubusercontent.com/lyc8503/sing-box-rules/rule-set-geosite/geosite-openai.srs'
+	option domain_list 'geosite:openai'
 
 config shunt_rules 'Proxy'
 	option network 'tcp,udp'
@@ -261,10 +256,8 @@ config shunt_rules 'Proxy'
 config shunt_rules 'China'
 	option remarks 'China'
 	option network 'tcp,udp'
-	option ip_list 'geoip:cn
-rule-set:remote:https://raw.githubusercontent.com/lyc8503/sing-box-rules/rule-set-geoip/geoip-cn.srs'
-	option domain_list 'geosite:cn
-rule-set:remote:https://raw.githubusercontent.com/lyc8503/sing-box-rules/rule-set-geosite/geosite-cn.srs'
+	option ip_list 'geoip:cn'
+	option domain_list 'geosite:cn'
 
 config shunt_rules 'QUIC'
 	option remarks 'QUIC'

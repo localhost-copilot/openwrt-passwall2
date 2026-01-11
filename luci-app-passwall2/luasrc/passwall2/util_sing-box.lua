@@ -12,6 +12,47 @@ local local_version = api.get_app_version("sing-box"):match("[^v]+")
 local version_ge_1_11_0 = api.compare_versions(local_version, ">=", "1.11.0")
 local version_ge_1_12_0 = api.compare_versions(local_version, ">=", "1.12.0")
 
+local geosite_all_tag = {}
+local geoip_all_tag = {}
+local srss_path = "/tmp/etc/" .. appname .."_tmp/singbox_srss/"
+
+local function convert_geofile()
+	local geo_dir = (uci:get(appname, "@global_rules[0]", "v2ray_location_asset") or "/usr/share/v2ray/"):match("^(.*)/")
+	local geosite_path = geo_dir .. "/geosite.dat"
+	local geoip_path = geo_dir .. "/geoip.dat"
+	if not api.finded_com("geoview") or api.compare_versions(api.get_app_version("geoview"), "<", "0.1.10") then
+		api.log(0, "!!! Note: Geo rules cannot be used if the Geoview component is missing or the version is too low.")
+		return
+	end
+	if not fs.access(srss_path) then
+		fs.mkdir(srss_path)
+	end
+	local function convert(file_path, prefix, tags)
+		if next(tags) and fs.access(file_path) then
+			local md5_file = srss_path .. prefix .. ".dat.md5"
+			local new_md5 = sys.exec("md5sum " .. file_path .. " 2>/dev/null | awk '{print $1}'"):gsub("\n", "")
+			local old_md5 = sys.exec("[ -f " .. md5_file .. " ] && head -n 1 " .. md5_file .. " | tr -d ' \t\n' || echo ''")
+			if new_md5 ~= "" and new_md5 ~= old_md5 then
+				sys.call("printf '%s' " .. new_md5 .. " > " .. md5_file)
+				sys.call("rm -rf " .. srss_path .. prefix .. "-*.srs" )
+			end
+			for k in pairs(tags) do
+				local srs_file = srss_path .. prefix .. "-" .. k .. ".srs"
+				if not fs.access(srs_file) then
+					local cmd = string.format("geoview -type %s -action convert -input '%s' -list '%s' -output '%s' -lowmem=true",
+						prefix, file_path, k, srs_file)
+					sys.exec(cmd)
+					--local status = fs.access(srs_file) and "success" or "failed"
+					--api.log(0, string.format("  - Convert %s:%s ... %s", prefix, k, status))
+				end
+			end
+		end
+	end
+	--api.log(0, "V2ray/Xray Geo convert to Sing-Box rule-set:")
+	convert(geosite_path, "geosite", geosite_all_tag)
+	convert(geoip_path, "geoip", geoip_all_tag)
+end
+
 local new_port
 
 local function get_new_port()
@@ -1331,15 +1372,22 @@ function gen_config(var)
 					if e.source then
 						local source_geoip = {}
 						local source_ip_cidr = {}
+						local source_is_private = false
 						string.gsub(e.source, '[^' .. " " .. ']+', function(w)
-							if w:find("geoip") == 1 then
-								table.insert(source_geoip, w)
+							if w:find("geoip:") == 1 then
+								local _geoip = w:sub(1 + #"geoip:")
+								if _geoip == "private" then
+									source_is_private = true
+								else
+									table.insert(source_geoip, w)
+								end
 							else
 								table.insert(source_ip_cidr, w)
 							end
 						end)
 						rule.source_geoip = #source_geoip > 0 and source_geoip or nil
 						rule.source_ip_cidr = #source_ip_cidr > 0 and source_ip_cidr or nil
+						rule.source_ip_is_private = source_is_private and true or nil
 					end
 
 					if e.sourcePort then
@@ -1386,7 +1434,14 @@ function gen_config(var)
 						string.gsub(e.domain_list, '[^' .. "\r\n" .. ']+', function(w)
 							if w:find("#") == 1 then return end
 							if w:find("geosite:") == 1 then
-								table.insert(domain_table.geosite, w:sub(1 + #"geosite:"))
+								local _geosite = w:sub(1 + #"geosite:")
+								table.insert(domain_table.geosite, _geosite)
+								local t = rule_set_add("local:" .. srss_path .. "geosite-" .. _geosite .. ".srs")
+								if t then
+									geosite_all_tag[_geosite] = true
+									table.insert(rule_set, t.tag)
+									table.insert(domain_table.rule_set, t.tag)
+								end
 							elseif w:find("regexp:") == 1 then
 								table.insert(domain_table.domain_regex, w:sub(1 + #"regexp:"))
 							elseif w:find("full:") == 1 then
@@ -1419,10 +1474,21 @@ function gen_config(var)
 					if e.ip_list then
 						local ip_cidr = {}
 						local geoip = {}
+						local is_private = false
 						string.gsub(e.ip_list, '[^' .. "\r\n" .. ']+', function(w)
 							if w:find("#") == 1 then return end
 							if w:find("geoip:") == 1 then
-								table.insert(geoip, w:sub(1 + #"geoip:"))
+								local _geoip = w:sub(1 + #"geoip:")
+								table.insert(geoip, _geoip)
+								if _geoip == "private" then
+									is_private = true
+								else
+									local t = rule_set_add("local:" .. srss_path .. "geoip-" .. _geoip .. ".srs")
+									if t then
+										geoip_all_tag[_geoip] = true
+										table.insert(rule_set, t.tag)
+									end
+								end
 							elseif w:find("rule-set:", 1, true) == 1 or w:find("rs:") == 1 then
 								w = w:sub(w:find(":") + 1, #w)
 								local t = rule_set_add(w)
@@ -1434,6 +1500,7 @@ function gen_config(var)
 							end
 						end)
 
+						rule.ip_is_private = is_private and true or nil
 						rule.ip_cidr = #ip_cidr > 0 and ip_cidr or nil
 						rule.geoip = #geoip > 0 and geoip or nil
 					end
@@ -1939,5 +2006,8 @@ if arg[1] then
 	local func =_G[arg[1]]
 	if func then
 		print(func(api.get_function_args(arg)))
+		if (next(geosite_all_tag) or next(geoip_all_tag)) and not no_run then
+			convert_geofile()
+		end
 	end
 end
