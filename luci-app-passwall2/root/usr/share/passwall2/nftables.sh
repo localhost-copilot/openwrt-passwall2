@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 MY_PATH=$DIR/nftables.sh
@@ -125,7 +125,7 @@ destroy_nftset() {
 }
 
 gen_nft_tables() {
-	if [ -z "$(nft list tables | grep 'inet passwall2')" ]; then
+	if ! nft list table "$NFTABLE_NAME" >/dev/null 2>&1; then
 		local nft_table_file="$TMP_PATH/PSW2_TABLE.nft"
 		# Set the correct priority to fit fw4
 		cat > "$nft_table_file" <<-EOF
@@ -153,25 +153,30 @@ gen_nft_tables() {
 insert_nftset() {
 	local nftset_name="${1}"; shift
 	local timeout_argument="${1}"; shift
-	local defalut_timeout_argument="3650d"
-	local nftset_elements
+	local default_timeout="365d"
+	local suffix=""
 
-	[ -n "${1}" ] && {
-		if [ "$timeout_argument" == "-1" ]; then
-			nftset_elements=$(echo -e $@ | sed 's/\s/, /g')
-		elif [ "$timeout_argument" == "0" ]; then
-			nftset_elements=$(echo -e $@ | sed "s/\s/ timeout $defalut_timeout_argument, /g" | sed "s/$/ timeout $defalut_timeout_argument/")
+	if [ -n "$nftset_name" ] && { [ $# -gt 0 ] || [ ! -t 0 ]; }; then
+		case "$timeout_argument" in
+			"-1") suffix="" ;;
+			 "0") suffix=" timeout $default_timeout" ;;
+			   *) suffix=" timeout $timeout_argument" ;;
+		esac
+		{
+		if [ $# -gt 0 ]; then
+			echo "add element $NFTABLE_NAME $nftset_name { "
+			printf "%s\n" "$@" | awk -v s="$suffix" '{if (NR > 1) printf ",\n";printf "%s%s", $0, s}'
+			echo " }"
 		else
-			nftset_elements=$(echo -e $@ | sed "s/\s/ timeout $timeout_argument, /g" | sed "s/$/ timeout $timeout_argument/")
+			local first_line
+			if IFS= read -r first_line; then
+				echo "add element $NFTABLE_NAME $nftset_name { "
+				{ echo "$first_line"; cat; } | awk -v s="$suffix" '{if (NR > 1) printf ",\n";printf "%s%s", $0, s}'
+				echo " }"
+			fi
 		fi
-		mkdir -p $TMP_PATH2/nftset
-		cat > "$TMP_PATH2/nftset/$nftset_name" <<-EOF
-			define $nftset_name = {$nftset_elements}	
-			add element $NFTABLE_NAME $nftset_name \$$nftset_name
-		EOF
-		nft -f "$TMP_PATH2/nftset/$nftset_name"
-		rm -rf "$TMP_PATH2/nftset"
-	}
+		} | nft -f -
+	fi
 }
 
 gen_nftset() {
@@ -179,19 +184,19 @@ gen_nftset() {
 	local ip_type="${1}"; shift
 	#  0 - don't set defalut timeout
 	local timeout_argument_set="${1}"; shift
-	#  0 - don't let element timeout(3650 days) when set's timeout parameters be seted
+	#  0 - don't let element timeout(365 days) when set's timeout parameters be seted
 	# -1 - follow the set's timeout parameters
 	local timeout_argument_element="${1}"; shift
+	local gc_interval_time="1h"
 
-	nft "list set $NFTABLE_NAME $nftset_name" &>/dev/null
-	if [ $? -ne 0 ]; then
+	if ! nft list set $NFTABLE_NAME $nftset_name >/dev/null 2>&1; then
 		if [ "$timeout_argument_set" == "0" ]; then
 			nft "add set $NFTABLE_NAME $nftset_name { type $ip_type; flags interval, timeout; auto-merge; }"
 		else
-			nft "add set $NFTABLE_NAME $nftset_name { type $ip_type; flags interval, timeout; timeout $timeout_argument_set; gc-interval $timeout_argument_set; auto-merge; }"
+			nft "add set $NFTABLE_NAME $nftset_name { type $ip_type; flags interval, timeout; timeout $timeout_argument_set; gc-interval $gc_interval_time; auto-merge; }"
 		fi
 	fi
-	[ -n "${1}" ] && insert_nftset $nftset_name $timeout_argument_element $@
+	[ $# -gt 0 ] || [ ! -t 0 ] && insert_nftset "$nftset_name" "$timeout_argument_element" "$@"
 }
 
 gen_lanlist() {
