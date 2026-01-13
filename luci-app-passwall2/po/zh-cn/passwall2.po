@@ -2134,8 +2134,8 @@ msgstr "开始更新规则..."
 msgid "Download file size verification error. Original file size: %sB. Downloaded file size: %sB."
 msgstr "下载文件大小校验出错，原始文件大小 %sB，下载文件大小：%sB。"
 
-msgid "Error reading downloaded file."
-msgstr "下载文件读取出错。"
+msgid "Downloaded file is empty or an error occurred while reading it."
+msgstr "下载的文件为空或读取文件时发生错误。"
 
 msgid "%s Start updating..."
 msgstr "%s 开始更新..."
