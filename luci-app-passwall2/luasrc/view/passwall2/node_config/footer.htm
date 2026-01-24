@@ -1,0 +1,15 @@
+<%
+local api = self.api
+-%>
+<script type="text/javascript">
+	//<![CDATA[
+	document.addEventListener("DOMContentLoaded", function () {
+		waitForElement('select[name*="<%=api.appname%>"][name*="type"]', function(el) {
+			el.addEventListener("change", () => {
+				el.blur();
+				switch_type()
+			});
+		});
+	});
+	//]]>
+</script>

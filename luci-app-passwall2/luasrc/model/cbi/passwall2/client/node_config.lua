@@ -9,6 +9,11 @@ if not arg[1] or not m:get(arg[1]) then
 	luci.http.redirect(api.url("node_list"))
 end
 
+local header = Template(appname .. "/node_config/header")
+header.api = api
+header.section = arg[1]
+m:append(header)
+
 m:append(Template(appname .. "/cbi/nodes_multivalue_com"))
 m:append(Template(appname .. "/cbi/nodes_listvalue_com"))
 
@@ -73,13 +78,10 @@ for index, value in ipairs(type_table) do
 	setfenv(p_func, getfenv(1))(m, s)
 end
 
-o = s:option(DummyValue, "switch_type", " ")
-o.template = appname .. "/node_config/switch_type"
-o:depends("___hide", true)
-for _, v in ipairs(s.fields["type"].keylist or {}) do
-	if s.val["type"] ~= v then
-		o:depends("type", v)
-	end
-end
+local footer = Template(appname .. "/node_config/footer")
+footer.api = api
+footer.section = arg[1]
+
+m:append(footer)
 
 return m
