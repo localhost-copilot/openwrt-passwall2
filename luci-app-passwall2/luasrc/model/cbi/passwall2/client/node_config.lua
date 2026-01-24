@@ -64,6 +64,7 @@ local fs = require "nixio.fs"
 local types_dir = "/usr/lib/lua/luci/model/cbi/passwall2/client/type/"
 s.val = {}
 s.val["type"] = m.uci:get(appname, arg[1], "type")
+s.val["protocol"] = m.uci:get(appname, arg[1], "protocol")
 
 o = s:option(ListValue, "type", translate("Type"))
 
