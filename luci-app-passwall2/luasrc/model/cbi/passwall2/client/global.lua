@@ -90,12 +90,11 @@ o.template = appname .. "/cbi/nodes_listvalue"
 o:value("", translate("Close"))
 o.group = {""}
 
-local node_id = m.uci:get(appname, global_cfgid, "node")
-local node = node_id and m.uci:get_all(appname, node_id) or {}
-
 -- Shunt Start
 if (has_singbox or has_xray) and #nodes_table > 0 then
 	if #normal_list > 0 then
+		local node_id = m.uci:get(appname, global_cfgid, "node")
+		local node = node_id and m.uci:get_all(appname, node_id) or {}
 		if node.protocol == "_shunt" then
 			local v = node
 			if v then
@@ -120,8 +119,10 @@ if (has_singbox or has_xray) and #nodes_table > 0 then
 				end
 				v.id = v[".name"]
 				local vid = v.id
+				s:tab("Shunt", translate("Shunt Rule"))
+				s:tab("ShuntDNS", translate("Shunt Rule") .. " DNS")
 				-- shunt node type, Sing-Box or Xray
-				local type = s:taboption("Main", ListValue, vid .. "-type", translate("Type"))
+				local type = s:taboption("Shunt", ListValue, vid .. "-type", translate("Type"))
 				if has_singbox then
 					type:value("sing-box", translate("Sing-Box"))
 				end
@@ -132,13 +133,13 @@ if (has_singbox or has_xray) and #nodes_table > 0 then
 				type.write = get_write(v.id, "type")
 				
 				-- pre-proxy
-				o = s:taboption("Main", Flag, vid .. "-preproxy_enabled", translate("Preproxy"))
+				o = s:taboption("Shunt", Flag, vid .. "-preproxy_enabled", translate("Preproxy"))
 				o:depends("node", v.id)
 				o.rmempty = false
 				o.cfgvalue = get_cfgvalue(v.id, "preproxy_enabled")
 				o.write = get_write(v.id, "preproxy_enabled")
 
-				o = s:taboption("Main", ListValue, vid .. "-main_node", string.format('<a style="color:red">%s</a>', translate("Preproxy Node")), translate("Set the node to be used as a pre-proxy. Each rule (including <code>Default</code>) has a separate switch that controls whether this rule uses the pre-proxy or not."))
+				o = s:taboption("Shunt", ListValue, vid .. "-main_node", string.format('<a style="color:red">%s</a>', translate("Preproxy Node")), translate("Set the node to be used as a pre-proxy. Each rule (including <code>Default</code>) has a separate switch that controls whether this rule uses the pre-proxy or not."))
 				o:depends(vid .. "-preproxy_enabled", "1")
 				o.template = appname .. "/cbi/nodes_listvalue"
 				o.group = {}
@@ -168,7 +169,7 @@ if (has_singbox or has_xray) and #nodes_table > 0 then
 				o.cfgvalue = get_cfgvalue(v.id, "main_node")
 				o.write = get_write(v.id, "main_node")
 
-				o = s:taboption("Main", Flag, vid .. "-fakedns", "FakeDNS")
+				o = s:taboption("ShuntDNS", Flag, vid .. "-fakedns", "FakeDNS")
 				o:depends("node", v.id)
 				o.cfgvalue = get_cfgvalue(v.id, "fakedns")
 				o.write = get_write(v.id, "fakedns")
@@ -184,7 +185,7 @@ if (has_singbox or has_xray) and #nodes_table > 0 then
 					local id = e[".name"]
 					local node_option = vid .. "-" .. id .. "_node"
 					if id and e.remarks then
-						o = s:taboption("Main", ListValue, node_option, string.format('* <a href="%s" target="_blank">%s</a>', api.url("shunt_rules", id), e.remarks))
+						o = s:taboption("Shunt", ListValue, node_option, string.format('* <a href="%s" target="_blank">%s</a>', api.url("shunt_rules", id), e.remarks))
 						o.cfgvalue = get_cfgvalue(v.id, id)
 						o.write = get_write(v.id, id)
 						o.remove = get_remove(v.id, id)
@@ -196,14 +197,14 @@ if (has_singbox or has_xray) and #nodes_table > 0 then
 						o.template = appname .. "/cbi/nodes_listvalue"
 						o.group = {"","","",""}
 
-						local pt = s:taboption("Main", ListValue, vid .. "-".. id .. "_proxy_tag", string.format('* <a style="color:red">%s</a>', e.remarks .. " " .. translate("Preproxy")))
+						local pt = s:taboption("Shunt", ListValue, vid .. "-".. id .. "_proxy_tag", string.format('* <a style="color:red">%s</a>', e.remarks .. " " .. translate("Preproxy")))
 						pt.cfgvalue = get_cfgvalue(v.id, id .. "_proxy_tag")
 						pt.write = get_write(v.id, id .. "_proxy_tag")
 						pt.remove = get_remove(v.id, id .. "_proxy_tag")
 						o:value("", translate("Close (Not use)"))
 						pt:value("main", translate("Use preproxy node"))
 
-						local fakedns_tag = s:taboption("Main", Flag, vid .. "-".. id .. "_fakedns", string.format('* <a style="color:red">%s</a>', e.remarks .. " " .. "FakeDNS"), translate("Use FakeDNS work in the domain that proxy."))
+						local fakedns_tag = s:taboption("ShuntDNS", Flag, vid .. "-".. id .. "_fakedns", string.format('* <a style="color:red">%s</a>', e.remarks .. " " .. "FakeDNS"))
 						fakedns_tag.cfgvalue = get_cfgvalue(v.id, id .. "_fakedns")
 						fakedns_tag.write = get_write(v.id, id .. "_fakedns")
 						fakedns_tag.remove = get_remove(v.id, id .. "_fakedns")
@@ -238,7 +239,7 @@ if (has_singbox or has_xray) and #nodes_table > 0 then
 				end)
 
 				local id = "default_node"
-				o = s:taboption("Main", ListValue, vid .. "-" .. id, string.format('* <a style="color:red">%s</a>', translate("Default")))
+				o = s:taboption("Shunt", ListValue, vid .. "-" .. id, string.format('* <a style="color:red">%s</a>', translate("Default")))
 				o.cfgvalue = get_cfgvalue(v.id, id)
 				o.write = get_write(v.id, id)
 				o.remove = get_remove(v.id, id)
@@ -270,7 +271,7 @@ if (has_singbox or has_xray) and #nodes_table > 0 then
 				end
 
 				local id = "default_proxy_tag"
-				o = s:taboption("Main", ListValue, vid .. "-" .. id, string.format('* <a style="color:red">%s</a>', translate("Default Preproxy")), translate("When using, localhost will connect this node first and then use this node to connect the default node."))
+				o = s:taboption("Shunt", ListValue, vid .. "-" .. id, string.format('* <a style="color:red">%s</a>', translate("Default Preproxy")), translate("When using, localhost will connect this node first and then use this node to connect the default node."))
 				o.cfgvalue = get_cfgvalue(v.id, id)
 				o.write = get_write(v.id, id)
 				o.remove = get_remove(v.id, id)
