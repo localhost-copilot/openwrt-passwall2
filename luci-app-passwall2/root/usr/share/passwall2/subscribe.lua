@@ -17,6 +17,8 @@ local ssub, slen, schar, sbyte, sformat, sgsub = string.sub, string.len, string.
 local split = api.split
 local jsonParse, jsonStringify = luci.jsonc.parse, luci.jsonc.stringify
 local base64Decode = api.base64Decode
+local UrlEncode = api.UrlEncode
+local UrlDecode = api.UrlDecode
 local uci = api.uci
 local fs = api.fs
 local log = api.log
@@ -401,18 +403,6 @@ do
 			end
 		end
 	end
-end
-
-local function UrlEncode(szText)
-	return szText:gsub("([^%w%-_%.%~])", function(c)
-		return string.format("%%%02X", string.byte(c))
-	end)
-end
-
-local function UrlDecode(szText)
-	return szText and szText:gsub("+", " "):gsub("%%(%x%x)", function(h)
-		return string.char(tonumber(h, 16))
-	end) or nil
 end
 
 -- Retrieve subscribe information (remaining data allowance, expiration time).
