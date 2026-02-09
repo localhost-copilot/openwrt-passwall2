@@ -607,6 +607,8 @@ local function processData(szType, content, add_mode, group)
 			result.tls = "0"
 		end
 
+		result.tcp_fast_open = info.tfo
+
 		if result.type == "sing-box" and (result.transport == "mkcp" or result.transport == "xhttp") then
 			log(2, i18n.translatef("Skip node: %s. Because Sing-Box does not support the %s protocol's %s transmission method, Xray needs to be used instead.", result.remarks, szType, result.transport))
 			return nil
@@ -709,13 +711,17 @@ local function processData(szType, content, add_mode, group)
 
 			result.method = method
 			result.password = password
+			result.tcp_fast_open = params.tfo
 
-			if has_xray and (result.type ~= 'Xray' and  result.type ~= 'sing-box' and params.type) then
-				result.type = 'Xray'
-				result.protocol = 'shadowsocks'
-			elseif has_singbox and (result.type ~= 'Xray' and  result.type ~= 'sing-box' and params.type) then
-				result.type = 'sing-box'
-				result.protocol = 'shadowsocks'
+			local need_upgrade = (result.type ~= "Xray" and result.type ~= "sing-box")
+				and (params.type and params.type ~= "tcp")
+				and (params.headerType and params.headerType ~= "none")
+			if has_xray and (need_upgrade or params.type == "xhttp") then
+				result.type = "Xray"
+				result.protocol = "shadowsocks"
+			elseif has_singbox and need_upgrade then
+				result.type = "sing-box"
+				result.protocol = "shadowsocks"
 			end
 
 			if result.plugin then
@@ -878,7 +884,8 @@ local function processData(szType, content, add_mode, group)
 					else
 						result.tls_allowInsecure = allowInsecure_default and "1" or "0"
 					end
-				else
+					result.uot = params.udp
+				elseif (params.type ~= "tcp" and params.type ~= "raw") and (params.headerType and params.headerType ~= "none") then
 					result.error_msg = i18n.translatef("Please replace Xray or Sing-Box to support more transmission methods in Shadowsocks.")
 				end
 			end
@@ -1080,6 +1087,7 @@ local function processData(szType, content, add_mode, group)
 			end
 
 			result.alpn = params.alpn
+			result.tcp_fast_open = params.tfo
 
 			if result.type == "sing-box" and (result.transport == "mkcp" or result.transport == "xhttp") then
 				log(2, i18n.translatef("Skip node: %s. Because Sing-Box does not support the %s protocol's %s transmission method, Xray needs to be used instead.", result.remarks, szType, result.transport))
@@ -1267,6 +1275,8 @@ local function processData(szType, content, add_mode, group)
 			else
 				result.tls_allowInsecure = allowInsecure_default and "1" or "0"
 			end
+
+			result.tcp_fast_open = params.tfo
 
 			if result.type == "sing-box" and (result.transport == "mkcp" or result.transport == "xhttp") then
 				log(2, i18n.translatef("Skip node: %s. Because Sing-Box does not support the %s protocol's %s transmission method, Xray needs to be used instead.", result.remarks, szType, result.transport))
