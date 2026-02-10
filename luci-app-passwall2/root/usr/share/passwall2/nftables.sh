@@ -2,6 +2,7 @@
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 MY_PATH=$DIR/nftables.sh
+UTILS_PATH=$DIR/utils.sh
 NFTABLE_NAME="inet passwall2"
 NFTSET_LOCAL="passwall2_local"
 NFTSET_WAN="passwall2_wan"
@@ -12,8 +13,6 @@ NFTSET_LOCAL6="passwall2_local6"
 NFTSET_WAN6="passwall2_wan6"
 NFTSET_LAN6="passwall2_lan6"
 NFTSET_VPS6="passwall2_vps6"
-
-. /lib/functions/network.sh
 
 FWI=$(uci -q get firewall.passwall2.path 2>/dev/null)
 FAKE_IP="198.18.0.0/16"
@@ -336,7 +335,6 @@ load_acl() {
 				local _ipt_source _ipv4
 				local msg
 				if [ -n "${interface}" ]; then
-					. /lib/functions/network.sh
 					local gateway device
 					network_get_gateway gateway "${interface}"
 					network_get_device device "${interface}"
@@ -1009,19 +1007,20 @@ flush_include() {
 gen_include() {
 	flush_include
 	local nft_chain_file=$TMP_PATH/PSW2_RULE.nft
-	echo '#!/usr/sbin/nft -f' > $nft_chain_file
+	echo '#!/bin/sh' > $nft_chain_file
 	nft list table $NFTABLE_NAME >> $nft_chain_file
 
 	local __nft=" "
 	__nft=$(cat <<- EOF
+		. $UTILS_PATH
 		[ -z "\$(nft list chain $NFTABLE_NAME mangle_prerouting | grep PSW2)" ] && nft -f ${nft_chain_file}
-		WAN_IP=\$(sh ${MY_PATH} get_wan_ips ip4)
+		WAN_IP=\$(get_wan_ips ip4)
 		[ ! -z "\${WAN_IP}" ] && {
 			nft flush set $NFTABLE_NAME $NFTSET_WAN
 			echo "\${WAN_IP}" | sh ${MY_PATH} insert_nftset $NFTSET_WAN "-1"
 		}
 		[ "$PROXY_IPV6" == "1" ] && {
-			WAN6_IP=\$(sh ${MY_PATH} get_wan_ips ip6)
+			WAN6_IP=\$(get_wan_ips ip6)
 			[ ! -z "\${WAN6_IP}" ] && {
 				nft flush set $NFTABLE_NAME $NFTSET_WAN6
 				echo "\${WAN6_IP}" | sh ${MY_PATH} insert_nftset $NFTSET_WAN6 "-1"
@@ -1063,9 +1062,6 @@ shift
 case $arg1 in
 insert_nftset)
 	insert_nftset "$@"
-	;;
-get_wan_ips)
-	get_wan_ips "$@"
 	;;
 filter_direct_node_list)
 	filter_direct_node_list
