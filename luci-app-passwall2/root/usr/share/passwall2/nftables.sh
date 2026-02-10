@@ -165,18 +165,27 @@ insert_nftset() {
 			   *) suffix=" timeout $timeout_argument" ;;
 		esac
 		{
-		if [ $# -gt 0 ]; then
-			echo "add element $NFTABLE_NAME $nftset_name { "
-			printf "%s\n" "$@" | awk -v s="$suffix" '{if (NR > 1) printf ",\n";printf "%s%s", $0, s}'
-			echo " }"
-		else
-			local first_line
-			if IFS= read -r first_line; then
-				echo "add element $NFTABLE_NAME $nftset_name { "
-				{ echo "$first_line"; cat; } | awk -v s="$suffix" '{if (NR > 1) printf ",\n";printf "%s%s", $0, s}'
-				echo " }"
-			fi
-		fi
+			if [ $# -gt 0 ]; then
+				printf "%s\n" "$@"
+			else
+				cat
+			fi | tr -s ' \t' '\n' | awk -v s="$suffix" -v n="$nftset_name" -v t="$NFTABLE_NAME" '
+				{
+					gsub(/^[ \t\r]+|[ \t\r]+$/, "");
+				}
+				$0 != "" {
+					if (first == 0) {
+						printf "add element %s %s { \n", t, n;
+						first = 1;
+					} else {
+						printf ",\n";
+					}
+					printf "%s%s", $0, s;
+				}
+				END {
+					if (first == 1) printf "\n }\n";
+				}
+			'
 		} | nft -f -
 	fi
 }
