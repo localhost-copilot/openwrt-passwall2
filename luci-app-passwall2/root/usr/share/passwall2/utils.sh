@@ -14,6 +14,8 @@ TMP_IFACE_PATH=${TMP_PATH}/iface
 TMP_ROUTE_PATH=${TMP_PATH}/route
 TMP_SCRIPT_FUNC_PATH=${TMP_PATH}/script_func
 
+. /lib/functions/network.sh
+
 config_get_type() {
 	local ret=$(uci -q get "${CONFIG}.${1}" 2>/dev/null)
 	echo "${ret:=$2}"
@@ -337,7 +339,6 @@ add_ip2route() {
 	local remarks="${1}"
 	[ "$remarks" != "$ip" ] && remarks="${1}(${ip})"
 
-	. /lib/functions/network.sh
 	local gateway device
 	network_get_gateway gateway "$2"
 	network_get_device device "$2"
