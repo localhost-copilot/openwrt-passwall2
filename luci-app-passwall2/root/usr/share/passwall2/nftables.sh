@@ -580,25 +580,25 @@ load_acl() {
 
 filter_haproxy() {
 	for item in $(uci show $CONFIG | grep ".lbss=" | cut -d "'" -f 2); do
-		local ip=$(get_host_ip ipv4 $(echo $item | awk -F ":" '{print $1}') 1)
-		[ -n "$ip" ] && insert_nftset $NFTSET_VPS "-1" $ip
-	done
+		get_host_ip ipv4 $(echo $item | awk -F ":" '{print $1}') 1
+	done | insert_nftset $NFTSET_VPS "-1"
 	log_i18n 1 "Add node to the load balancer is directly connected to %s[%s]." "nftset" "${NFTSET_VPS}"
 }
 
 filter_vps_addr() {
-	for server_host in $@; do
-		local vps_ip4=$(get_host_ip "ipv4" ${server_host})
-		local vps_ip6=$(get_host_ip "ipv6" ${server_host})
-		[ -n "$vps_ip4" ] && insert_nftset $NFTSET_VPS "-1" $vps_ip4
-		[ -n "$vps_ip6" ] && insert_nftset $NFTSET_VPS6 "-1" $vps_ip6
-	done
+	for server_host in "$@"; do
+		get_host_ip "ipv4" ${server_host}
+	done | insert_nftset $NFTSET_VPS "-1"
+
+	for server_host in "$@"; do
+		get_host_ip "ipv6" ${server_host}
+	done | insert_nftset $NFTSET_VPS6 "-1"
 }
 
 filter_vpsip() {
-	uci show $CONFIG | grep -E "(.address=|.download_address=)" | cut -d "'" -f 2 | grep -E "([0-9]{1,3}[\.]){3}[0-9]{1,3}" | grep -v "^127\.0\.0\.1$" | sed -e "/^$/d" | insert_nftset $NFTSET_VPS "-1"
+	uci show $CONFIG | grep -E "(.address=|.download_address=)" | cut -d "'" -f 2 | grep -E "([0-9]{1,3}[\.]){3}[0-9]{1,3}" | grep -v "^127\.0\.0\.1$" | insert_nftset $NFTSET_VPS "-1"
 	#log 1 "$(i18n "Add all %s nodes to %s[%s] direct connection complete." "IPv4" "nftset" "${$NFTSET_VPS}")"
-	uci show $CONFIG | grep -E "(.address=|.download_address=)" | cut -d "'" -f 2 | grep -E "([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4}" | sed -e "/^$/d" | insert_nftset $NFTSET_VPS6 "-1"
+	uci show $CONFIG | grep -E "(.address=|.download_address=)" | cut -d "'" -f 2 | grep -E "([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4}" | insert_nftset $NFTSET_VPS6 "-1"
 	#log 1 "$(i18n "Add all %s nodes to %s[%s] direct connection complete." "IPv6" "nftset" "${$NFTSET_VPS6}")"
 }
 
@@ -657,8 +657,8 @@ add_firewall_rule() {
 	gen_nftset $NFTSET_LAN6 ipv6_addr 0 "-1" $(gen_lanlist_6)
 	gen_nftset $NFTSET_VPS6 ipv6_addr 0 "-1"
 
-	ip address show | grep -w "inet" | awk '{print $2}' | awk -F '/' '{print $1}' | sed -e "s/ /\n/g" | insert_nftset $NFTSET_LOCAL "-1"
-	ip address show | grep -w "inet6" | awk '{print $2}' | awk -F '/' '{print $1}' | sed -e "s/ /\n/g" | insert_nftset $NFTSET_LOCAL6 "-1"
+	ip address show | grep -w "inet" | awk '{print $2}' | awk -F '/' '{print $1}' | insert_nftset $NFTSET_LOCAL "-1"
+	ip address show | grep -w "inet6" | awk '{print $2}' | awk -F '/' '{print $1}' | insert_nftset $NFTSET_LOCAL6 "-1"
 
 	# Ignore special IP ranges
 	local lan_ifname lan_ip
@@ -669,20 +669,20 @@ add_firewall_rule() {
 		#log_i18n 1 "local network segments (%s) direct connection: %s" "IPv4" "${lan_ip}"
 		#log_i18n 1 "local network segments (%s) direct connection: %s" "IPv6" "${lan_ip6}"
 
-		[ -n "$lan_ip" ] && insert_nftset $NFTSET_LAN "-1" $(echo $lan_ip | sed -e "s/ /\n/g")
-		[ -n "$lan_ip6" ] && insert_nftset $NFTSET_LAN6 "-1" $(echo $lan_ip6 | sed -e "s/ /\n/g")
+		[ -n "$lan_ip" ] && echo $lan_ip | insert_nftset $NFTSET_LAN "-1"
+		[ -n "$lan_ip6" ] && echo $lan_ip6 | insert_nftset $NFTSET_LAN6 "-1"
 	}
 
 	[ -n "$ISP_DNS" ] && {
+		echo "$ISP_DNS" | insert_nftset $NFTSET_LAN 0
 		for ispip in $ISP_DNS; do
-			insert_nftset $NFTSET_LAN "-1" $ispip
 			log_i18n 1 "$(i18n "Add ISP %s DNS to the whitelist: %s" "IPv4" "${ispip}")"
 		done
 	}
 
 	[ -n "$ISP_DNS6" ] && {
+		echo $ISP_DNS6 | insert_nftset $NFTSET_LAN6 0
 		for ispip6 in $ISP_DNS6; do
-			insert_nftset $NFTSET_LAN6 "-1" $ispip6
 			log_i18n 1 "$(i18n "Add ISP %s DNS to the whitelist: %s" "IPv6" "${ispip6}")"
 		done
 	}
@@ -789,7 +789,7 @@ add_firewall_rule() {
 	WAN_IP=$(get_wan_ips ip4)
 	[ -n "${WAN_IP}" ] && {
 		nft flush set $NFTABLE_NAME $NFTSET_WAN
-		insert_nftset $NFTSET_WAN "-1" $WAN_IP
+		echo $WAN_IP | insert_nftset $NFTSET_WAN "-1"
 		[ -z "${is_tproxy}" ] && nft "add rule $NFTABLE_NAME PSW2_NAT ip daddr @$NFTSET_WAN counter return comment \"WAN_IP_RETURN\""
 		nft "add rule $NFTABLE_NAME PSW2_MANGLE ip daddr @$NFTSET_WAN counter return comment \"WAN_IP_RETURN\""
 	}
@@ -820,7 +820,7 @@ add_firewall_rule() {
 		WAN6_IP=$(get_wan_ips ip6)
 		[ -n "${WAN6_IP}" ] && {
 			nft flush set $NFTABLE_NAME $NFTSET_WAN6
-			insert_nftset $NFTSET_WAN6 "-1" $WAN6_IP
+			echo $WAN6_IP | insert_nftset $NFTSET_WAN6 "-1"
 			nft "add rule $NFTABLE_NAME PSW2_MANGLE_V6 ip6 daddr @$NFTSET_WAN6 counter return comment \"WAN6_IP_RETURN\""
 		}
 		unset WAN6_IP
@@ -1018,13 +1018,13 @@ gen_include() {
 		WAN_IP=\$(sh ${MY_PATH} get_wan_ips ip4)
 		[ ! -z "\${WAN_IP}" ] && {
 			nft flush set $NFTABLE_NAME $NFTSET_WAN
-			sh ${MY_PATH} insert_nftset $NFTSET_WAN "-1" \$WAN_IP
+			echo "\${WAN_IP}" | sh ${MY_PATH} insert_nftset $NFTSET_WAN "-1"
 		}
 		[ "$PROXY_IPV6" == "1" ] && {
 			WAN6_IP=\$(sh ${MY_PATH} get_wan_ips ip6)
 			[ ! -z "\${WAN6_IP}" ] && {
 				nft flush set $NFTABLE_NAME $NFTSET_WAN6
-				sh ${MY_PATH} insert_nftset $NFTSET_WAN6 "-1" \$WAN6_IP
+				echo "\${WAN6_IP}" | sh ${MY_PATH} insert_nftset $NFTSET_WAN6 "-1"
 			}
 		}
 	EOF
