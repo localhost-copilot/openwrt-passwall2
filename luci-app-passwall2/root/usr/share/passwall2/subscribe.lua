@@ -348,7 +348,7 @@ do
 		else
 			-- Preproxy Node
 			local currentNode = uci:get_all(appname, node_id) or nil
-			if currentNode and currentNode.preproxy_node then
+			if currentNode and currentNode.preproxy_node and not currentNode.preproxy_node:find("Socks_") then
 				CONFIG[#CONFIG + 1] = {
 					log = true,
 					id = node_id,
@@ -365,7 +365,7 @@ do
 			end
 			-- Landing node
 			local currentNode = uci:get_all(appname, node_id) or nil
-			if currentNode and currentNode.to_node then
+			if currentNode and currentNode.to_node and not currentNode.to_node:find("Socks_") then
 				CONFIG[#CONFIG + 1] = {
 					log = true,
 					id = node_id,
