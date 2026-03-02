@@ -1030,6 +1030,12 @@ msgstr "URL подписки не может быть пустым."
 msgid "Subscribe via proxy"
 msgstr "Подписка через прокси"
 
+msgid "Update Once on Boot"
+msgstr "Обновлять один раз при загрузке"
+
+msgid "Updates the subscription the first time runs automatically after each system boot."
+msgstr "Подписку обновляют при первом запуске, и она автоматически активируется после каждой загрузки системы."
+
 msgid "Enable auto update subscribe"
 msgstr "Автообновление подписки"
 

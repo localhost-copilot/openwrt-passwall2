@@ -1029,6 +1029,12 @@ msgstr "URL اشتراک نمی‌تواند خالی باشد."
 msgid "Subscribe via proxy"
 msgstr "اشتراک از طریق پروکسی"
 
+msgid "Update Once on Boot"
+msgstr "یک بار در بوت به‌روزرسانی کنید"
+
+msgid "Updates the subscription the first time runs automatically after each system boot."
+msgstr "اشتراک را برای اولین بار به طور خودکار پس از هر بار بوت سیستم به‌روزرسانی می‌کند."
+
 msgid "Enable auto update subscribe"
 msgstr "فعال‌سازی به‌روزرسانی خودکار اشتراک"
 
