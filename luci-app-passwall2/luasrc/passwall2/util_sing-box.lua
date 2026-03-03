@@ -9,7 +9,6 @@ local CACHE_PATH = api.CACHE_PATH
 local split = api.split
 
 local local_version = api.get_app_version("sing-box"):match("[^v]+")
-local version_ge_1_11_0 = api.compare_versions(local_version, ">=", "1.11.0")
 local version_ge_1_12_0 = api.compare_versions(local_version, ">=", "1.12.0")
 
 local GEO_VAR = {
@@ -1030,7 +1029,6 @@ function gen_config(var)
 			tag = "socks-in",
 			listen = local_socks_address,
 			listen_port = tonumber(local_socks_port),
-			sniff = true
 		}
 		if local_socks_username and local_socks_password and local_socks_username ~= "" and local_socks_password ~= "" then
 			inbound.users = {
@@ -1041,6 +1039,10 @@ function gen_config(var)
 			}
 		end
 		table.insert(inbounds, inbound)
+		table.insert(route.rules, {
+			action = "sniff",
+			inbound = inbound.tag
+		})
 	end
 
 	if local_http_port then
@@ -1067,8 +1069,6 @@ function gen_config(var)
 			tag = "tproxy",
 			listen = "::",
 			listen_port = tonumber(redir_port),
-			sniff = true,
-			sniff_override_destination = (singbox_settings.sniff_override_destination == "1") and true or false
 		}
 		if tcp_proxy_way ~= "tproxy" then
 			local inbound = {
@@ -1076,16 +1076,22 @@ function gen_config(var)
 				tag = "redirect_tcp",
 				listen = "::",
 				listen_port = tonumber(redir_port),
-				sniff = true,
-				sniff_override_destination = (singbox_settings.sniff_override_destination == "1") and true or false,
 			}
 			table.insert(inbounds, inbound)
+			table.insert(route.rules, {
+				action = "sniff",
+				inbound = inbound.tag
+			})
 
 			inbound_tproxy.tag = "tproxy_udp"
 			inbound_tproxy.network = "udp"
 		end
 
 		table.insert(inbounds, inbound_tproxy)
+		table.insert(route.rules, {
+			action = "sniff",
+			inbound = inbound_tproxy.tag
+		})
 	end
 
 	if node then
@@ -1275,6 +1281,7 @@ function gen_config(var)
 							override_port = tonumber(to_node.port),
 						})
 						table.insert(rules, 1, {
+							action = "route",
 							inbound = {tag},
 							outbound = outbound.tag,
 						})
@@ -1438,10 +1445,16 @@ function gen_config(var)
 					end
 					
 					local rule = {
+						action = "route",
 						inbound = inboundTag,
 						outbound = outboundTag,
 						protocol = protocols
 					}
+
+					if outboundTag == "block" then
+						rule.action = "reject"
+						rule.outbound = nil
+					end
 
 					if e.network then
 						local network = {}
@@ -1737,6 +1750,7 @@ function gen_config(var)
 			for index, value in ipairs(dns_domain_rules) do
 				if value.outboundTag and (value.domain or value.domain_suffix or value.domain_keyword or value.domain_regex or value.rule_set) then
 					local dns_rule = {
+						action = "route",
 						server = value.outboundTag,
 						domain = (value.domain and #value.domain > 0) and value.domain or nil,
 						domain_suffix = (value.domain_suffix and #value.domain_suffix > 0) and value.domain_suffix or nil,
@@ -1783,24 +1797,20 @@ function gen_config(var)
 			}
 			table.insert(dns.rules, fakedns_dns_rule)
 		end
-	
-		table.insert(inbounds, {
+		local dns_in_inbound = {
 			type = "direct",
 			tag = "dns-in",
 			listen = "127.0.0.1",
 			listen_port = tonumber(dns_listen_port),
-			sniff = true,
-		})
-		table.insert(outbounds, {
-			type = "dns",
-			tag = "dns-out",
+		}
+		table.insert(inbounds, dns_in_inbound)
+		table.insert(route.rules, {
+			action = "sniff",
+			inbound = dns_in_inbound.tag
 		})
 		table.insert(route.rules, 1, {
-			protocol = "dns",
-			inbound = {
-				"dns-in"
-			},
-			outbound = "dns-out"
+			action = "hijack-dns",
+			inbound = dns_in_inbound.tag
 		})
 
 		local content = flag .. node_id .. jsonc.stringify(route.rules)
@@ -1838,6 +1848,13 @@ function gen_config(var)
 		end
 	end
 
+	if COMMON.default_outbound_tag == "block" then
+		route.final = nil
+		table.insert(route.rules, {
+			action = "reject"
+		})
+	end
+
 	if next(rule_set_table) then
 		route.rule_set = {}
 		for k, v in pairs(rule_set_table) do
@@ -1865,10 +1882,6 @@ function gen_config(var)
 			routing_mark = 255,
 			domain_strategy = "prefer_ipv6",
 		})
-		table.insert(outbounds, {
-			type = "block",
-			tag = "block"
-		})
 		for index, value in ipairs(config.outbounds) do
 			if not value["_flag_proxy_tag"] and not value.detour and value["_id"] and value.server and value.server_port and not no_run then
 				sys.call(string.format("echo '%s' >> %s", value["_id"], api.TMP_PATH .. "/direct_node_list"))
@@ -1879,9 +1892,7 @@ function gen_config(var)
 				end
 			end
 		end
-		if version_ge_1_11_0 then
-			-- Migrate logics
-			-- https://sing-box.sagernet.org/migration/
+		if true then
 			local endpoints = {}
 			for i = #config.outbounds, 1, -1 do
 				local value = config.outbounds[i]
@@ -1911,56 +1922,9 @@ function gen_config(var)
 					endpoints[#endpoints + 1] = endpoint
 					table.remove(config.outbounds, i)
 				end
-				if value.type == "block" or value.type == "dns" then
-					-- https://sing-box.sagernet.org/migration/#migrate-legacy-special-outbounds-to-rule-actions
-					table.remove(config.outbounds, i)
-				end
 			end
 			if #endpoints > 0 then
 				config.endpoints = endpoints
-			end
-
-			-- https://sing-box.sagernet.org/migration/#migrate-legacy-special-outbounds-to-rule-actions
-			for i = #config.route.rules, 1, -1 do
-				local value = config.route.rules[i]
-				if value.outbound == "block" then
-					value.action = "reject"
-					value.outbound = nil
-				elseif value.outbound == "dns-out" then
-					value.action = "hijack-dns"
-					value.outbound = nil
-				else
-					value.action = "route"
-				end
-			end
-
-			-- https://sing-box.sagernet.org/migration/#migrate-legacy-inbound-fields-to-rule-actions
-			for i = #config.inbounds, 1, -1 do
-				local value = config.inbounds[i]
-				if value.sniff == true then
-					table.insert(config.route.rules, 1, {
-						inbound = value.tag,
-						action = "sniff"
-					})
-					value.sniff = nil
-					value.sniff_override_destination = nil
-				end
-				if value.domain_strategy then
-					table.insert(config.route.rules, 1, {
-						inbound = value.tag,
-						action = "resolve",
-						strategy = value.domain_strategy,
-						--server = ""
-					})
-					value.domain_strategy = nil
-				end
-			end
-
-			if config.route.final == "block" then
-				config.route.final = nil
-				table.insert(config.route.rules, {
-					action = "reject"
-				})
 			end
 		end
 		return jsonc.stringify(config, 1)

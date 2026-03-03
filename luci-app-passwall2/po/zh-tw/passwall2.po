@@ -1609,9 +1609,6 @@ msgstr "覆盖連接目標地址"
 msgid "Override the connection destination address with the sniffed domain.<br />Otherwise use sniffed domain for routing only.<br />If using shunt nodes, configure the domain shunt rules correctly."
 msgstr "用探測出的域名覆盖連接目標地址。<br />否則仅將探測得到的域名用於路由。<br />如使用分流節點，請正確設置域名分流規則。"
 
-msgid "Override the connection destination address with the sniffed domain.<br />When enabled, traffic will match only by domain, ignoring IP rules.<br />If using shunt nodes, configure the domain shunt rules correctly."
-msgstr "用探測出的域名覆盖連接目標地址。<br />啟用後仅使用域名进行流量匹配，將忽略IP規則。<br />如使用分流節點，請正確設置域名分流規則。"
-
 msgid "Handshake Server"
 msgstr "握手服務器"
 

@@ -1617,9 +1617,6 @@ msgstr "بازنویسی آدرس مقصد اتصال"
 msgid "Override the connection destination address with the sniffed domain.<br />Otherwise use sniffed domain for routing only.<br />If using shunt nodes, configure the domain shunt rules correctly."
 msgstr "بازنویسی آدرس مقصد اتصال با دامنه شنود شده (Sniffed Domain).<br />در غیر این صورت، از دامنه شنود شده فقط برای مسیریابی استفاده می‌شود.<br />اگر از گره‌های شنت (Shunt) استفاده می‌کنید، قوانین مربوطه را به درستی پیکربندی کنید."
 
-msgid "Override the connection destination address with the sniffed domain.<br />When enabled, traffic will match only by domain, ignoring IP rules.<br />If using shunt nodes, configure the domain shunt rules correctly."
-msgstr "بازنویسی آدرس مقصد اتصال با دامنه شنود شده.<br />زمانی که فعال باشد، ترافیک فقط با دامنه مطابقت داده می‌شود و قوانین IP نادیده گرفته می‌شوند.<br />اگر از گره‌های شنت استفاده می‌کنید، قوانین شنت دامنه را به درستی پیکربندی کنید."
-
 msgid "Handshake Server"
 msgstr "سرور دست تکان دادن"
 

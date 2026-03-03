@@ -1618,9 +1618,6 @@ msgstr "Заменять целевой адрес соединения"
 msgid "Override the connection destination address with the sniffed domain.<br />Otherwise use sniffed domain for routing only.<br />If using shunt nodes, configure the domain shunt rules correctly."
 msgstr "Заменять целевой адрес на домен, полученный при анализе трафика.<br />Иначе домен будет использоваться только для маршрутизации.<br />При использовании серверов разделения трафика правильно настройте правила доменной маршрутизации."
 
-msgid "Override the connection destination address with the sniffed domain.<br />When enabled, traffic will match only by domain, ignoring IP rules.<br />If using shunt nodes, configure the domain shunt rules correctly."
-msgstr "Заменять целевой адрес на домен, полученный при анализе трафика.<br />При включении трафик будет сопоставляться только по домену, IP-правила игнорируются.<br />При использовании серверов разделения трафика правильно настройте правила доменной маршрутизации."
-
 msgid "Handshake Server"
 msgstr "Сервер рукопожатия"
 

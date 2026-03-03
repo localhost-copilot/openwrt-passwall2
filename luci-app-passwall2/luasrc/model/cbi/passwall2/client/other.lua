@@ -251,11 +251,6 @@ if has_singbox then
 	s.anonymous = true
 	s.addremove = false
 
-	o = s:option(Flag, "sniff_override_destination", translate("Override the connection destination address"))
-	o.default = 0
-	o.rmempty = false
-	o.description = translate("Override the connection destination address with the sniffed domain.<br />When enabled, traffic will match only by domain, ignoring IP rules.<br />If using shunt nodes, configure the domain shunt rules correctly.")
-
 	if version_ge_1_12_0 then
 		o = s:option(Flag, "record_fragment", "TLS Record " .. translate("Fragment"),
 			translate("Split handshake data into multiple TLS records for better censorship evasion. Low overhead. Recommended to enable first."))
