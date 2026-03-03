@@ -1639,12 +1639,6 @@ msgstr "ECH 配置"
 msgid "ECH Key"
 msgstr "ECH 密鑰"
 
-msgid "PQ signature schemes"
-msgstr "後量子對等證書签名方案"
-
-msgid "Disable adaptive sizing of TLS records"
-msgstr "禁用 TLS 記錄的自適應大小调整"
-
 msgid "ECH Query Policy"
 msgstr "ECH 查詢策略"
 

@@ -1648,12 +1648,6 @@ msgstr "Конфигурация ECH"
 msgid "ECH Key"
 msgstr "Ключ ECH"
 
-msgid "PQ signature schemes"
-msgstr "Схемы постквантовой подписи"
-
-msgid "Disable adaptive sizing of TLS records"
-msgstr "Отключить адаптивный размер TLS-записей"
-
 msgid "ECH Query Policy"
 msgstr "Политика запросов ECH"
 

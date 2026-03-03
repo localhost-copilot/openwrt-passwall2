@@ -9,7 +9,7 @@ local CACHE_PATH = api.CACHE_PATH
 local split = api.split
 
 local local_version = api.get_app_version("sing-box"):match("[^v]+")
-local version_ge_1_12_0 = api.compare_versions(local_version, ">=", "1.12.0")
+local version_ge_1_13_0 = api.compare_versions(local_version, ">=", "1.13.0")
 
 local GEO_VAR = {
 	OK = nil,
@@ -150,7 +150,10 @@ function gen_outbound(flag, node, tag, proxy_table)
 			type = node.protocol,
 			server = node.address,
 			server_port = tonumber(node.port),
-			domain_strategy = node.domain_strategy,
+			domain_resolver = {
+				server = "direct",
+				strategy = node.domain_strategy
+			},
 			detour = node.detour,
 		}
 
@@ -175,8 +178,6 @@ function gen_outbound(flag, node, tag, proxy_table)
 				ech = {
 					enabled = (node.ech == "1") and true or false,
 					config = node.ech_config and split(node.ech_config:gsub("\\n", "\n"), "\n") or {},
-					pq_signature_schemes_enabled = node.pq_signature_schemes_enabled and true or false,
-					dynamic_record_sizing_disabled = node.dynamic_record_sizing_disabled and true or false
 				},
 				utls = {
 					enabled = (node.utls == "1" or node.reality == "1") and true or false,
@@ -428,8 +429,6 @@ function gen_outbound(flag, node, tag, proxy_table)
 					ech = {
 						enabled = (node.ech == "1") and true or false,
 						config = node.ech_config and split(node.ech_config:gsub("\\n", "\n"), "\n") or {},
-						pq_signature_schemes_enabled = node.pq_signature_schemes_enabled and true or false,
-						dynamic_record_sizing_disabled = node.dynamic_record_sizing_disabled and true or false
 					}
 				}
 			}
@@ -465,8 +464,6 @@ function gen_outbound(flag, node, tag, proxy_table)
 					ech = (node.ech == "1") and {
 						enabled = true,
 						config = node.ech_config and split(node.ech_config:gsub("\\n", "\n"), "\n") or {},
-						pq_signature_schemes_enabled = node.pq_signature_schemes_enabled and true or false,
-						dynamic_record_sizing_disabled = node.dynamic_record_sizing_disabled and true or false
 					} or nil
 				}
 			}
@@ -505,8 +502,6 @@ function gen_outbound(flag, node, tag, proxy_table)
 					ech = {
 						enabled = (node.ech == "1") and true or false,
 						config = node.ech_config and split(node.ech_config:gsub("\\n", "\n"), "\n") or {},
-						pq_signature_schemes_enabled = node.pq_signature_schemes_enabled and true or false,
-						dynamic_record_sizing_disabled = node.dynamic_record_sizing_disabled and true or false
 					}
 				}
 			}
@@ -575,8 +570,6 @@ function gen_config_server(node)
 		tls.ech = {
 			enabled = true,
 			key = node.ech_key and split(node.ech_key:gsub("\\n", "\n"), "\n") or {},
-			pq_signature_schemes_enabled = (node.pq_signature_schemes_enabled == "1") and true or false,
-			dynamic_record_sizing_disabled = (node.dynamic_record_sizing_disabled == "1") and true or false,
 		}
 	end
 
@@ -1632,13 +1625,7 @@ function gen_config(var)
 			disable_expire = false, -- Disable DNS cache expiration.
 			independent_cache = false, -- Make each DNS server's cache independent for specific purposes. If enabled, it will slightly reduce performance.
 			reverse_mapping = true, -- After responding to a DNS query, a reverse mapping of the IP address is stored to provide the domain name for routing purposes.
-			fakeip = nil,
 		}
-
-		table.insert(dns.servers, {
-			tag = "block",
-			address = "rcode://success",
-		})
 
 		remote_strategy = "prefer_ipv6"
 		if remote_dns_query_strategy == "UseIPv4" then
@@ -1649,11 +1636,8 @@ function gen_config(var)
 
 		local remote_server = {
 			tag = "remote",
-			address_strategy = "prefer_ipv4",
-			strategy = remote_strategy,
-			address_resolver = "direct",
+			domain_resolver = "direct",
 			detour = COMMON.default_outbound_tag,
-			client_subnet = remote_dns_client_ip,
 		}
 
 		if remote_dns_detour == "direct" then
@@ -1662,34 +1646,37 @@ function gen_config(var)
 
 		if remote_dns_udp_server then
 			local server_port = tonumber(remote_dns_udp_port) or 53
-			remote_server.address = "udp://" .. remote_dns_udp_server .. ":" .. server_port
-		end
-
-		if remote_dns_tcp_server then
+			remote_server.type = "udp"
+			remote_server.server = remote_dns_udp_server
+			remote_server.server_port = server_port
+		elseif remote_dns_tcp_server then
 			local server_port = tonumber(remote_dns_tcp_port) or 53
-			remote_server.address = "tcp://" .. remote_dns_tcp_server .. ":" .. server_port
+			remote_server.type = "tcp"
+			remote_server.server = remote_dns_tcp_server
+			remote_server.server_port = server_port
+		elseif remote_dns_doh_url then
+			local _a = api.parseURL(remote_dns_doh_url)
+			if _a then
+				remote_server.type = "https"
+				remote_server.server = _a.hostname
+				if _a.port then
+					remote_server.server_port = _a.port
+				else
+					remote_server.server_port = 443
+				end
+				remote_server.path = _a.pathname
+			end
 		end
 
-		if remote_dns_doh_url then
-			remote_server.address = remote_dns_doh_url
-		end
-
-		if remote_server.address then
-			table.insert(dns.servers, remote_server)
-		end
+		table.insert(dns.servers, remote_server)
 
 		fakedns_tag = "remote_fakeip"
 		if remote_dns_fake or inner_fakedns == "1" then
-			dns.fakeip = {
-				enabled = true,
-				inet4_range = "198.18.0.0/16",
-				inet6_range = "fc00::/18",
-			}
-
 			table.insert(dns.servers, {
 				tag = fakedns_tag,
-				address = "fakeip",
-				strategy = remote_strategy,
+				type = "fakeip",
+				inet4_range = "198.18.0.0/16",
+				inet6_range = "fc00::/18",
 			})
 
 			if not experimental then
@@ -1701,7 +1688,7 @@ function gen_config(var)
 				path = CACHE_PATH .. "/singbox_" .. flag .. ".db"
 			}
 		end
-	
+
 		if direct_dns_udp_server then
 			local domain = {}
 			local nodes_domain_text = sys.exec('uci show passwall2 | grep ".address=" | cut -d "\'" -f 2 | grep "[a-zA-Z]$" | sort -u')
@@ -1714,21 +1701,21 @@ function gen_config(var)
 					domain = domain
 				})
 			end
-	
+
 			direct_strategy = "prefer_ipv6"
 			if direct_dns_query_strategy == "UseIPv4" then
 				direct_strategy = "ipv4_only"
 			elseif direct_dns_query_strategy == "UseIPv6" then
 				direct_strategy = "ipv6_only"
 			end
-	
-			local port = tonumber(direct_dns_udp_port) or 53
-	
+
+			local server_port = tonumber(direct_dns_udp_port) or 53
+
 			table.insert(dns.servers, {
 				tag = "direct",
-				address = "udp://" .. direct_dns_udp_server .. ":" .. port,
-				address_strategy = "prefer_ipv6",
-				strategy = direct_strategy,
+				type = "udp",
+				server = direct_dns_udp_server,
+				server_port = server_port,
 				detour = "direct",
 			})
 		end
@@ -1760,10 +1747,21 @@ function gen_config(var)
 						disable_cache = false,
 						invert = value.invert,
 					}
+					if value.outboundTag == "block" then
+						dns_rule.action = "predefined"
+						dns_rule.rcode = "NOERROR"
+						dns_rule.disable_cache = nil
+						dns_rule.server = nil
+					end
+					if value.outboundTag == "direct" then
+						dns_rule.strategy = direct_strategy
+					end
 					if value.outboundTag ~= "block" and value.outboundTag ~= "direct" then
 						dns_rule.server = "remote"
 						dns_rule.rewrite_ttl = 30
-						if value.outboundTag ~= COMMON.default_outbound_tag and remote_server.address and remote_dns_detour ~= "direct" then
+						dns_rule.strategy = remote_strategy
+						dns_rule.client_subnet = remote_dns_client_ip
+						if value.outboundTag ~= COMMON.default_outbound_tag and remote_server.server and remote_dns_detour ~= "direct" then
 							local remote_dns_server = api.clone(remote_server)
 							remote_dns_server.tag = value.shunt_tag
 							remote_dns_server.detour = value.outboundTag
@@ -1848,6 +1846,17 @@ function gen_config(var)
 		end
 	end
 
+	if not dns then
+		dns = {
+			servers = {
+				{
+					type = "local",
+					tag = "direct"
+				}
+			}
+		}
+	end
+
 	if COMMON.default_outbound_tag == "block" then
 		route.final = nil
 		table.insert(route.rules, {
@@ -1880,7 +1889,10 @@ function gen_config(var)
 			type = "direct",
 			tag = "direct",
 			routing_mark = 255,
-			domain_strategy = "prefer_ipv6",
+			domain_resolver = {
+				server = "direct",
+				strategy = "prefer_ipv6"
+			}
 		})
 		for index, value in ipairs(config.outbounds) do
 			if not value["_flag_proxy_tag"] and not value.detour and value["_id"] and value.server and value.server_port and not no_run then
@@ -1916,107 +1928,18 @@ function gen_config(var)
 								reserved = value.reserved
 							}
 						},
-						domain_strategy = value.domain_strategy,
+						domain_resolver = {
+							server = "direct",
+							strategy = value.domain_strategy
+						},
 						detour = value.detour
 					}
-					if version_ge_1_12_0 then
-						endpoint.domain_resolver = {
-							server = "direct",
-							strategy = endpoint.domain_strategy
-						}
-						endpoint.domain_strategy = nil
-					end
 					endpoints[#endpoints + 1] = endpoint
 					table.remove(config.outbounds, i)
 				end
 			end
 			if #endpoints > 0 then
 				config.endpoints = endpoints
-			end
-		end
-		if version_ge_1_12_0 then
-			-- https://sing-box.sagernet.org/migration/#1120
-			if config.dns then
-				if config.dns.servers and #config.dns.servers > 0 then
-					if config.dns.rules and #config.dns.rules > 0 then
-						for i = #config.dns.rules, 1, -1 do
-							local value = config.dns.rules[i]
-							-- https://sing-box.sagernet.org/migration/#__tabbed_11_1
-							if value.server == "block" then
-								value.action = "predefined"
-								value.rcode = "NOERROR"
-								value.disable_cache = nil
-								value.server = nil
-							end
-							-- https://sing-box.sagernet.org/migration/#__tabbed_13_1
-							if value.server then
-								if value.server == "direct" then
-									value.strategy = direct_strategy
-								else
-									value.strategy = remote_strategy
-									value.client_subnet = remote_dns_client_ip
-								end
-							end
-						end
-					end
-					for i = #config.dns.servers, 1, -1 do
-						local value = config.dns.servers[i]
-						-- https://sing-box.sagernet.org/migration/#__tabbed_1_9
-						if config.dns.fakeip and value.tag == fakedns_tag then
-							value.type = "fakeip"
-							value.inet4_range = config.dns.fakeip.inet4_range
-							value.inet6_range = config.dns.fakeip.inet6_range
-							value.address = nil
-							config.dns.fakeip = nil
-						end
-						-- https://sing-box.sagernet.org/migration/#__tabbed_11_1
-						if value.tag == "block" then
-							table.remove(config.dns.servers, i)
-						end
-						if value.address then
-							local _a = api.parseURL(value.address)
-							if _a then
-								value.type = _a.protocol
-								value.server = _a.hostname
-								if _a.port then
-									value.server_port = _a.port
-								else
-									if _a.protocol == "tcp" or _a.protocol == "udp" then
-										value.server_port = 53
-									elseif _a.protocol == "https" then
-										value.server_port = 443
-									end
-								end
-								value.path = _a.pathname
-							end
-						end
-						value.domain_resolver = value.address_resolver
-						value.address_resolver = nil
-						value.address_strategy = nil
-						value.strategy = nil
-						value.client_subnet = nil
-						value.address = nil
-					end
-				end
-			else
-				config.dns = {
-					servers = {
-						{
-							type = "local",
-							tag = "direct"
-						}
-					}
-				}
-			end
-			for i = #config.outbounds, 1, -1 do
-				local value = config.outbounds[i]
-				if value.server or value.domain_strategy then
-					value.domain_resolver = {
-						server = "direct",
-						strategy = value.domain_strategy
-					}
-				end
-				value.domain_strategy = nil
 			end
 		end
 		return jsonc.stringify(config, 1)

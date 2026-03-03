@@ -1647,12 +1647,6 @@ msgstr "پیکربندی ECH"
 msgid "ECH Key"
 msgstr "کلید ECH"
 
-msgid "PQ signature schemes"
-msgstr "طرح‌های امضای PQ"
-
-msgid "Disable adaptive sizing of TLS records"
-msgstr "غیرفعال‌سازی اندازه‌دهی تطبیقی رکوردهای TLS"
-
 msgid "ECH Query Policy"
 msgstr "سیاست پرس‌وجوی ECH"
 
