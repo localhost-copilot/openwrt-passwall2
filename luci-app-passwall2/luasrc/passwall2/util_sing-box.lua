@@ -1640,7 +1640,7 @@ function gen_config(var)
 			address = "rcode://success",
 		})
 
-		local remote_strategy = "prefer_ipv6"
+		remote_strategy = "prefer_ipv6"
 		if remote_dns_query_strategy == "UseIPv4" then
 			remote_strategy = "ipv4_only"
 		elseif remote_dns_query_strategy == "UseIPv6" then
@@ -1653,7 +1653,7 @@ function gen_config(var)
 			strategy = remote_strategy,
 			address_resolver = "direct",
 			detour = COMMON.default_outbound_tag,
-			client_subnet = (remote_dns_client_ip and remote_dns_client_ip ~= "") and remote_dns_client_ip or nil,
+			client_subnet = remote_dns_client_ip,
 		}
 
 		if remote_dns_detour == "direct" then
@@ -1678,7 +1678,7 @@ function gen_config(var)
 			table.insert(dns.servers, remote_server)
 		end
 
-		local fakedns_tag = "remote_fakeip"
+		fakedns_tag = "remote_fakeip"
 		if remote_dns_fake or inner_fakedns == "1" then
 			dns.fakeip = {
 				enabled = true,
@@ -1715,7 +1715,7 @@ function gen_config(var)
 				})
 			end
 	
-			local direct_strategy = "prefer_ipv6"
+			direct_strategy = "prefer_ipv6"
 			if direct_dns_query_strategy == "UseIPv4" then
 				direct_strategy = "ipv4_only"
 			elseif direct_dns_query_strategy == "UseIPv6" then
@@ -1919,12 +1919,104 @@ function gen_config(var)
 						domain_strategy = value.domain_strategy,
 						detour = value.detour
 					}
+					if version_ge_1_12_0 then
+						endpoint.domain_resolver = {
+							server = "direct",
+							strategy = endpoint.domain_strategy
+						}
+						endpoint.domain_strategy = nil
+					end
 					endpoints[#endpoints + 1] = endpoint
 					table.remove(config.outbounds, i)
 				end
 			end
 			if #endpoints > 0 then
 				config.endpoints = endpoints
+			end
+		end
+		if version_ge_1_12_0 then
+			-- https://sing-box.sagernet.org/migration/#1120
+			if config.dns then
+				if config.dns.servers and #config.dns.servers > 0 then
+					if config.dns.rules and #config.dns.rules > 0 then
+						for i = #config.dns.rules, 1, -1 do
+							local value = config.dns.rules[i]
+							-- https://sing-box.sagernet.org/migration/#__tabbed_11_1
+							if value.server == "block" then
+								value.action = "predefined"
+								value.rcode = "NOERROR"
+								value.disable_cache = nil
+								value.server = nil
+							end
+							-- https://sing-box.sagernet.org/migration/#__tabbed_13_1
+							if value.server then
+								if value.server == "direct" then
+									value.strategy = direct_strategy
+								else
+									value.strategy = remote_strategy
+									value.client_subnet = remote_dns_client_ip
+								end
+							end
+						end
+					end
+					for i = #config.dns.servers, 1, -1 do
+						local value = config.dns.servers[i]
+						-- https://sing-box.sagernet.org/migration/#__tabbed_1_9
+						if config.dns.fakeip and value.tag == fakedns_tag then
+							value.type = "fakeip"
+							value.inet4_range = config.dns.fakeip.inet4_range
+							value.inet6_range = config.dns.fakeip.inet6_range
+							value.address = nil
+							config.dns.fakeip = nil
+						end
+						-- https://sing-box.sagernet.org/migration/#__tabbed_11_1
+						if value.tag == "block" then
+							table.remove(config.dns.servers, i)
+						end
+						if value.address then
+							local _a = api.parseURL(value.address)
+							if _a then
+								value.type = _a.protocol
+								value.server = _a.hostname
+								if _a.port then
+									value.server_port = _a.port
+								else
+									if _a.protocol == "tcp" or _a.protocol == "udp" then
+										value.server_port = 53
+									elseif _a.protocol == "https" then
+										value.server_port = 443
+									end
+								end
+								value.path = _a.pathname
+							end
+						end
+						value.domain_resolver = value.address_resolver
+						value.address_resolver = nil
+						value.address_strategy = nil
+						value.strategy = nil
+						value.client_subnet = nil
+						value.address = nil
+					end
+				end
+			else
+				config.dns = {
+					servers = {
+						{
+							type = "local",
+							tag = "direct"
+						}
+					}
+				}
+			end
+			for i = #config.outbounds, 1, -1 do
+				local value = config.outbounds[i]
+				if value.server or value.domain_strategy then
+					value.domain_resolver = {
+						server = "direct",
+						strategy = value.domain_strategy
+					}
+				end
+				value.domain_strategy = nil
 			end
 		end
 		return jsonc.stringify(config, 1)
