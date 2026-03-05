@@ -258,11 +258,13 @@ o:value("tcp", "TCP")
 o:value("doh", "DoH")
 o:value("udp", "UDP")
 if current_node.type == "sing-box" then
+	o:value("tls", "TLS(DoT)")
+	o:value("quic", "QUIC(DoQ)")
 	o:value("http3", "HTTP3(DoH3)")
 end
 o:depends({ _hide_dns_option = "1",  ['!reverse'] = true })
 
----- DNS Forward
+---- DNS over TCP or UDP or TLS (DoT) or QUIC (DoQ)
 o = s:option(Value, "remote_dns", translate("Remote DNS"))
 o.datatype = "or(ipaddr,ipaddrport)"
 o.default = "1.1.1.1"
@@ -276,6 +278,8 @@ o:value("208.67.220.220", "208.67.220.220 (OpenDNS)")
 o:value("208.67.222.222", "208.67.222.222 (OpenDNS)")
 o:depends("remote_dns_protocol", "tcp")
 o:depends("remote_dns_protocol", "udp")
+o:depends("remote_dns_protocol", "quic")
+o:depends("remote_dns_protocol", "tls")
 
 ---- DNS over HTTP (DoH) or DNS over HTTP3(DoH3)
 o = s:option(Value, "remote_dns_doh", translate("Remote DNS DoH"))
@@ -302,6 +306,8 @@ o:depends("remote_dns_protocol", "tcp")
 o:depends("remote_dns_protocol", "doh")
 o:depends("remote_dns_protocol", "udp")
 o:depends("remote_dns_protocol", "http3")
+o:depends("remote_dns_protocol", "quic")
+o:depends("remote_dns_protocol", "tls")
 
 o = s:option(ListValue, "remote_dns_detour", translate("Remote DNS Outbound"))
 o.default = "remote"
@@ -311,6 +317,8 @@ o:depends("remote_dns_protocol", "tcp")
 o:depends("remote_dns_protocol", "doh")
 o:depends("remote_dns_protocol", "udp")
 o:depends("remote_dns_protocol", "http3")
+o:depends("remote_dns_protocol", "quic")
+o:depends("remote_dns_protocol", "tls")
 
 o = s:option(Flag, "remote_fakedns", "FakeDNS", translate("Use FakeDNS work in the domain that proxy."))
 o.default = "0"
@@ -325,6 +333,8 @@ o:depends("remote_dns_protocol", "tcp")
 o:depends("remote_dns_protocol", "doh")
 o:depends("remote_dns_protocol", "udp")
 o:depends("remote_dns_protocol", "http3")
+o:depends("remote_dns_protocol", "quic")
+o:depends("remote_dns_protocol", "tls")
 
 o = s:option(ListValue, "dns_hosts_mode", translate("Domain Override"))
 o:value("default", translate("Use global config"))
@@ -356,6 +366,8 @@ for k, v in pairs(nodes_table) do
 		s.fields["remote_fakedns"]:depends({ node = v.id, remote_dns_protocol = "doh" })
 		s.fields["remote_fakedns"]:depends({ node = v.id, remote_dns_protocol = "udp" })
 		s.fields["remote_fakedns"]:depends({ node = v.id, remote_dns_protocol = "http3" })
+		s.fields["remote_fakedns"]:depends({ node = v.id, remote_dns_protocol = "quic" })
+		s.fields["remote_fakedns"]:depends({ node = v.id, remote_dns_protocol = "tls" })
 	end
 end
 

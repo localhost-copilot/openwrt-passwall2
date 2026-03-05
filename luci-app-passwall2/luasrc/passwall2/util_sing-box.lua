@@ -928,8 +928,10 @@ function gen_config(var)
 	local direct_nftset = var["direct_nftset"]
 	local remote_dns_udp_server = var["remote_dns_udp_server"]
 	local remote_dns_udp_port = var["remote_dns_udp_port"]
+	local remote_dns_quic = var["remote_dns_quic"]
 	local remote_dns_tcp_server = var["remote_dns_tcp_server"]
 	local remote_dns_tcp_port = var["remote_dns_tcp_port"]
+	local remote_dns_tls = var["remote_dns_tls"]
 	local remote_dns_doh_url = var["remote_dns_doh_url"]
 	local remote_dns_doh_host = var["remote_dns_doh_host"]
 	local remote_dns_doh_ip = var["remote_dns_doh_ip"]
@@ -1701,11 +1703,19 @@ function gen_config(var)
 			remote_server.type = "udp"
 			remote_server.server = remote_dns_udp_server
 			remote_server.server_port = server_port
+			if remote_dns_quic then
+				remote_server.type = "quic"
+				remote_server.server_port = 853
+			end
 		elseif remote_dns_tcp_server then
 			local server_port = tonumber(remote_dns_tcp_port) or 53
 			remote_server.type = "tcp"
 			remote_server.server = remote_dns_tcp_server
 			remote_server.server_port = server_port
+			if remote_dns_tls then
+				remote_server.type = "tls"
+				remote_server.server_port = 853
+			end
 		elseif remote_dns_doh_url then
 			local _a = api.parseURL(remote_dns_doh_url)
 			if _a then

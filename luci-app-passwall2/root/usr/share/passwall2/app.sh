@@ -330,19 +330,23 @@ run_singbox() {
 		json_add_string "direct_dns_query_strategy" "${direct_dns_query_strategy}"
 
 		case "$remote_dns_protocol" in
-			udp)
+			udp|\
+			quic)
 				local _dns=$(get_first_dns remote_dns_udp_server 53 | sed 's/#/:/g')
 				local _dns_address=$(echo ${_dns} | awk -F ':' '{print $1}')
 				local _dns_port=$(echo ${_dns} | awk -F ':' '{print $2}')
 				json_add_string "remote_dns_udp_port" "${_dns_port}"
 				json_add_string "remote_dns_udp_server" "${_dns_address}"
+				[ "$remote_dns_protocol" == "quic" ] && json_add_string "remote_dns_quic" "1"
 			;;
-			tcp)
+			tcp|\
+			tls)
 				local _dns=$(get_first_dns remote_dns_tcp_server 53 | sed 's/#/:/g')
 				local _dns_address=$(echo ${_dns} | awk -F ':' '{print $1}')
 				local _dns_port=$(echo ${_dns} | awk -F ':' '{print $2}')
 				json_add_string "remote_dns_tcp_port" "${_dns_port}"
 				json_add_string "remote_dns_tcp_server" "${_dns_address}"
+				[ "$remote_dns_protocol" == "tls" ] && json_add_string "remote_dns_tls" "1"
 			;;
 			doh|\
 			http3)
@@ -645,11 +649,13 @@ run_global() {
 	[ -n "$REMOTE_DNS_PROTOCOL" ] && {
 		V2RAY_ARGS="${V2RAY_ARGS} remote_dns_protocol=${REMOTE_DNS_PROTOCOL} remote_dns_detour=${REMOTE_DNS_DETOUR}"
 		case "$REMOTE_DNS_PROTOCOL" in
-			udp*)
+			udp|\
+			quic)
 				V2RAY_ARGS="${V2RAY_ARGS} remote_dns_udp_server=${REMOTE_DNS}"
 				dns_msg="${dns_msg} $(i18n "Remote DNS: %s" "${REMOTE_DNS}")"
 			;;
-			tcp)
+			tcp|\
+			tls)
 				V2RAY_ARGS="${V2RAY_ARGS} remote_dns_tcp_server=${REMOTE_DNS}"
 				dns_msg="${dns_msg} $(i18n "Remote DNS: %s" "${REMOTE_DNS}")"
 			;;

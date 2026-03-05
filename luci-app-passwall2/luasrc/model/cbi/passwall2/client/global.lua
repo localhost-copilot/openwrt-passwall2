@@ -179,10 +179,12 @@ o:value("tcp", "TCP")
 o:value("doh", "DoH")
 o:value("udp", "UDP")
 if current_node.type == "sing-box" then
+	o:value("tls", "TLS(DoT)")
+	o:value("quic", "QUIC(DoQ)")
 	o:value("http3", "HTTP3(DoH3)")
 end
 
----- DNS Forward
+---- DNS over TCP or UDP or TLS (DoT) or QUIC (DoQ)
 o = s:taboption("DNS", Value, "remote_dns", translate("Remote DNS"))
 o.datatype = "or(ipaddr,ipaddrport)"
 o.default = "1.1.1.1"
@@ -196,6 +198,8 @@ o:value("208.67.220.220", "208.67.220.220 (OpenDNS)")
 o:value("208.67.222.222", "208.67.222.222 (OpenDNS)")
 o:depends("remote_dns_protocol", "tcp")
 o:depends("remote_dns_protocol", "udp")
+o:depends("remote_dns_protocol", "quic")
+o:depends("remote_dns_protocol", "tls")
 
 ---- DNS over HTTP (DoH) or DNS over HTTP3(DoH3)
 o = s:taboption("DNS", Value, "remote_dns_doh", translate("Remote DNS DoH"))
