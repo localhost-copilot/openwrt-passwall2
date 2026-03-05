@@ -1657,6 +1657,11 @@ function gen_config(var)
 					table.insert(domains, host)
 				end
 			end)
+			if remote_dns_doh_ip and remote_dns_doh_host ~= remote_dns_doh_ip and not api.is_ip(remote_dns_doh_host) then
+				hosts_server.predefined[remote_dns_doh_host] = remote_dns_doh_ip
+				table.insert(domains, remote_dns_doh_host)
+				remote_server_domain_resolver = "hosts"
+			end
 			if next(hosts_server.predefined) then
 				table.insert(dns.servers, hosts_server)
 				table.insert(dns.rules, {
@@ -1681,6 +1686,10 @@ function gen_config(var)
 			domain_resolver = "direct",
 			detour = COMMON.default_outbound_tag,
 		}
+
+		if remote_server_domain_resolver then
+			remote_server.domain_resolver = remote_server_domain_resolver
+		end
 
 		if remote_dns_detour == "direct" then
 			remote_server.detour = "direct"
