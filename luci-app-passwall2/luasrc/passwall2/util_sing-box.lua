@@ -1660,6 +1660,9 @@ function gen_config(var)
 			if next(hosts_server.predefined) then
 				table.insert(dns.servers, hosts_server)
 				table.insert(dns.rules, {
+					query_type = {
+						"A", "AAAA"
+					},
 					domain = domains,
 					server = "hosts"
 				})
