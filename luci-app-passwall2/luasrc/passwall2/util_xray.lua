@@ -330,6 +330,9 @@ function gen_outbound(flag, node, tag, proxy_table)
 								if type(fm.tcp) == "table" then
 									finalmask.tcp = fm.tcp
 								end
+								if type(fm.quicParams) == "table" then
+									finalmask.quicParams = fm.quicParams
+								end
 							end
 						end
 					end
@@ -652,6 +655,9 @@ function gen_config_server(node)
 									end
 									if type(fm.tcp) == "table" then
 										finalmask.tcp = fm.tcp
+									end
+									if type(fm.quicParams) == "table" then
+										finalmask.quicParams = fm.quicParams
 									end
 								end
 							end
