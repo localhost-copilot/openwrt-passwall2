@@ -1704,12 +1704,6 @@ msgstr "بازه قطعه‌بندی"
 msgid "Fragmentation interval (ms)"
 msgstr "بازه قطعه‌بندی (میلی‌ثانیه)"
 
-msgid "Max Split"
-msgstr "حداکثر تقسیم"
-
-msgid "Limit the maximum number of splits."
-msgstr "محدود کردن حداکثر تعداد تقسیم‌ها."
-
 msgid "Split handshake data into multiple TLS records for better censorship evasion. Low overhead. Recommended to enable first."
 msgstr "تقسیم داده‌های دست تکان دادن به چندین رکورد TLS برای فرار بهتر از سانسور. سربار کم. توصیه می‌شود ابتدا فعال شود."
 
@@ -1733,9 +1727,6 @@ msgstr "بسته"
 
 msgid "Delay (ms)"
 msgstr "تاخیر (میلی‌ثانیه)"
-
-msgid "IP Type"
-msgstr "نوع IP"
 
 msgid "If is domain name, The requested domain name will be resolved to IP before connect."
 msgstr "اگر نام دامنه است، نام دامنه درخواست شده قبل از اتصال به IP حل می‌شود."

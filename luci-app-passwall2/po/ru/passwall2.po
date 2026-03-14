@@ -1705,12 +1705,6 @@ msgstr "Интервал фрагментации"
 msgid "Fragmentation interval (ms)"
 msgstr "Интервал между фрагментами (мс)"
 
-msgid "Max Split"
-msgstr "Макс. число фрагментов"
-
-msgid "Limit the maximum number of splits."
-msgstr "Ограничить максимальное количество фрагментов."
-
 msgid "Split handshake data into multiple TLS records for better censorship evasion. Low overhead. Recommended to enable first."
 msgstr "Разбивать данные рукопожатия на несколько TLS-записей для лучшего обхода цензуры. Малая нагрузка. Рекомендуется включить в первую очередь."
 
@@ -1734,9 +1728,6 @@ msgstr "Пакет"
 
 msgid "Delay (ms)"
 msgstr "Задержка (мс)"
-
-msgid "IP Type"
-msgstr "Тип IP"
 
 msgid "If is domain name, The requested domain name will be resolved to IP before connect."
 msgstr "Если указано доменное имя, оно будет разрешено в IP-адрес перед подключением."

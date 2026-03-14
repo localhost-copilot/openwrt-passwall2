@@ -1696,12 +1696,6 @@ msgstr "分片間隔"
 msgid "Fragmentation interval (ms)"
 msgstr "分片間隔（ms）"
 
-msgid "Max Split"
-msgstr "最大分片數"
-
-msgid "Limit the maximum number of splits."
-msgstr "限制分片的最大數量。"
-
 msgid "Split handshake data into multiple TLS records for better censorship evasion. Low overhead. Recommended to enable first."
 msgstr "將握手數据拆分為多個 TLS 記錄，提升抗封锁能力，几乎不增加延迟，建議優先啟用。"
 
@@ -1725,9 +1719,6 @@ msgstr "數据包"
 
 msgid "Delay (ms)"
 msgstr "延迟（ms）"
-
-msgid "IP Type"
-msgstr "IP 類型"
 
 msgid "If is domain name, The requested domain name will be resolved to IP before connect."
 msgstr "如果是域名，域名將在請求發出之前解析為 IP。"
