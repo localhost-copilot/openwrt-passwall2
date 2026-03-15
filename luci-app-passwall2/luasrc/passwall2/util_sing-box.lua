@@ -459,9 +459,14 @@ function gen_outbound(flag, node, tag, proxy_table)
 					insecure = (node.tls_allowInsecure == "1") and true or false,
 					fragment = fragment,
 					record_fragment = record_fragment,
-					alpn = (node.tuic_alpn and node.tuic_alpn ~= "") and {
-						node.tuic_alpn
-					} or nil,
+					alpn = (node.tuic_alpn and node.tuic_alpn ~= "") and (function()
+						local alpn = {}
+						string.gsub(node.tuic_alpn, '[^,]+', function(w)
+							table.insert(alpn, w)
+						end)
+						if #alpn > 0 then return alpn end
+						return nil
+					end)() or nil,
 					ech = (node.ech == "1") and {
 						enabled = true,
 						config = node.ech_config and split(node.ech_config:gsub("\\n", "\n"), "\n") or {},
@@ -776,9 +781,14 @@ function gen_config_server(node)
 	end
 
 	if node.protocol == "tuic" then
-		tls.alpn = (node.tuic_alpn and node.tuic_alpn ~= "") and {
-			node.tuic_alpn
-		} or nil
+		tls.alpn = (node.tuic_alpn and node.tuic_alpn ~= "") and (function()
+			local alpn = {}
+			string.gsub(node.tuic_alpn, '[^,]+', function(w)
+				table.insert(alpn, w)
+			end)
+			if #alpn > 0 then return alpn end
+			return nil
+		end)() or nil
 		protocol_table = {
 			users = {
 				{
@@ -789,7 +799,7 @@ function gen_config_server(node)
 			},
 			congestion_control = node.tuic_congestion_control or "cubic",
 			zero_rtt_handshake = (node.tuic_zero_rtt_handshake == "1") and true or false,
-			heartbeat = node.tuic_heartbeat .. "s",
+			heartbeat = (tonumber(node.tuic_heartbeat) or 3) .. "s",
 			tls = tls
 		}
 	end
