@@ -1666,6 +1666,12 @@ msgstr "ECH 查詢策略"
 msgid "Controls the policy used when performing DNS queries for ECH configuration."
 msgstr "控制使用 DNS 查詢 ECH 配置時的策略。"
 
+msgid "ECH Query Domain"
+msgstr "ECH 查詢網域名"
+
+msgid "Overrides the domain name used for ECH HTTPS record queries."
+msgstr "覆蓋用於 ECH HTTPS 記錄查詢的網域名。"
+
 msgid "Enable Multipath TCP, need to be enabled in both server and client configuration."
 msgstr "啟用 Multipath TCP，需在服務端和客戶端配置中同時啟用。"
 

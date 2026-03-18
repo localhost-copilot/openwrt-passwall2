@@ -1674,6 +1674,12 @@ msgstr "سیاست پرس‌وجوی ECH"
 msgid "Controls the policy used when performing DNS queries for ECH configuration."
 msgstr "سیاستی که هنگام انجام پرس‌وجوهای DNS برای پیکربندی ECH استفاده می‌شود را کنترل می‌کند."
 
+msgid "ECH Query Domain"
+msgstr "دامنه پرس و جو ECH"
+
+msgid "Overrides the domain name used for ECH HTTPS record queries."
+msgstr "نام دامنه مورد استفاده برای پرس‌وجوهای رکورد ECH HTTPS را لغو می‌کند."
+
 msgid "Enable Multipath TCP, need to be enabled in both server and client configuration."
 msgstr "فعال‌سازی Multipath TCP، باید در تنظیمات سرور و کلاینت فعال باشد."
 

@@ -1675,6 +1675,12 @@ msgstr "Политика запросов ECH"
 msgid "Controls the policy used when performing DNS queries for ECH configuration."
 msgstr "Управляет политикой DNS-запросов для получения конфигурации ECH."
 
+msgid "ECH Query Domain"
+msgstr "Домен запроса ECH"
+
+msgid "Overrides the domain name used for ECH HTTPS record queries."
+msgstr "Переопределяет доменное имя, используемое для запросов записей ECH HTTPS."
+
 msgid "Enable Multipath TCP, need to be enabled in both server and client configuration."
 msgstr "Включить Multipath TCP. Должно быть активировано и на сервере, и на клиенте."
 
