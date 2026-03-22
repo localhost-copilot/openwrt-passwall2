@@ -1353,6 +1353,9 @@ msgstr "رمز عبور TUIC برای Socks محلی"
 msgid "UDP relay mode"
 msgstr "حالت بازپخش UDP"
 
+msgid "Concurrent Tunnels"
+msgstr "تونل‌های همزمان"
+
 msgid "Congestion control algorithm"
 msgstr "الگوریتم کنترل ازدحام"
 

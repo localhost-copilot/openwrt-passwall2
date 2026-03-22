@@ -1345,6 +1345,9 @@ msgstr "用於本地Socks服務器連接的密碼"
 msgid "UDP relay mode"
 msgstr "UDP中继模式"
 
+msgid "Concurrent Tunnels"
+msgstr "並發隧道連接數"
+
 msgid "Congestion control algorithm"
 msgstr "拥塞控制算法"
 

@@ -1354,6 +1354,9 @@ msgstr "Пароль для локального SOCKS TUIC"
 msgid "UDP relay mode"
 msgstr "Режим ретрансляции UDP"
 
+msgid "Concurrent Tunnels"
+msgstr "Одновременные туннели"
+
 msgid "Congestion control algorithm"
 msgstr "Алгоритм контроля перегрузок"
 
