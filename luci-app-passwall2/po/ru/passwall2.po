@@ -2362,3 +2362,6 @@ msgstr "Ошибка, выполняется восстановление слу
 
 msgid "Subscription complete..."
 msgstr "Подписка завершена..."
+
+msgid "Processing, please wait…"
+msgstr "Обработка, пожалуйста, подождите…"

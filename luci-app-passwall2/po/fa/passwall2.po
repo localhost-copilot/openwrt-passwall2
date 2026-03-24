@@ -2364,3 +2364,6 @@ msgstr "خطا، بازیابی سرویس."
 
 msgid "Subscription complete..."
 msgstr "اشتراک کامل شد..."
+
+msgid "Processing, please wait…"
+msgstr "در حال پردازش، لطفا صبر کنید…"

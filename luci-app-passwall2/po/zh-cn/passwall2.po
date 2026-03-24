@@ -2356,3 +2356,6 @@ msgstr "发生错误, 正在恢复服务。"
 
 msgid "Subscription complete..."
 msgstr "订阅完毕..."
+
+msgid "Processing, please wait…"
+msgstr "正在处理，请稍候。"
