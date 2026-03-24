@@ -2275,6 +2275,9 @@ msgstr "گزینه‌های افزونه ناقص است."
 msgid "shadowsocks-libev unsupport 2022 encryption."
 msgstr "shadowsocks-libev از رمزنگاری 2022 پشتیبانی نمی‌کند."
 
+msgid "Please replace %s to support %s transmission method."
+msgstr "لطفا برای پشتیبانی از روش انتقال %s، %s را جایگزین کنید."
+
 msgid "Please replace Xray or Sing-Box to support more transmission methods in Shadowsocks."
 msgstr "لطفاً برای پشتیبانی از روش‌های انتقال بیشتر در Shadowsocks، از Xray یا Sing-Box استفاده کنید."
 

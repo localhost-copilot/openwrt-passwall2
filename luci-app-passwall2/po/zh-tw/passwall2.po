@@ -2267,8 +2267,11 @@ msgstr "插件選項不完整。"
 msgid "shadowsocks-libev unsupport 2022 encryption."
 msgstr "shadowsocks-libev 不支持2022加密。"
 
+msgid "Please replace %s to support %s transmission method."
+msgstr "請更換 %s 以支援 %s 傳輸方式。"
+
 msgid "Please replace Xray or Sing-Box to support more transmission methods in Shadowsocks."
-msgstr "請更換 Xray 或 Sing-Box 來支持 Shadowsocks 更多的傳輸方式。"
+msgstr "請更換 Xray 或 Sing-Box 來支援 Shadowsocks 更多的傳輸方式。"
 
 msgid "unsupport %s plugin."
 msgstr "不支持 %s 插件。"

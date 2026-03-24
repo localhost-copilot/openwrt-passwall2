@@ -838,7 +838,7 @@ local function processData(szType, content, add_mode, group)
 					end
 					if params.type == 'xhttp' then
 						if result.type ~= "Xray" then
-							result.error_msg = "请更换 Xray 以支持 xhttp 传输方式."
+							result.error_msg = i18n.translatef("Please replace %s to support %s transmission method.", "Xray", "xhttp")
 						end
 						result.xhttp_host = params.host
 						result.xhttp_path = params.path

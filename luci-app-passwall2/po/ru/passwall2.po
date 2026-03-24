@@ -2273,6 +2273,9 @@ msgstr "Опции плагина указаны не полностью."
 msgid "shadowsocks-libev unsupport 2022 encryption."
 msgstr "shadowsocks-libev не поддерживает шифрование 2022."
 
+msgid "Please replace %s to support %s transmission method."
+msgstr "Пожалуйста, замените %s, чтобы поддержать метод передачи %s."
+
 msgid "Please replace Xray or Sing-Box to support more transmission methods in Shadowsocks."
 msgstr "Пожалуйста, используйте Xray или Sing-Box для поддержки дополнительных методов передачи в Shadowsocks."
 
