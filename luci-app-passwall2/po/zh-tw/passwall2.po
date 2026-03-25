@@ -559,6 +559,9 @@ msgstr "認證類型"
 msgid "Auth Password"
 msgstr "認證密碼"
 
+msgid "Client BBR Flow Control"
+msgstr "客戶端 BBR 流控"
+
 msgid "Commands the client to use the BBR flow control algorithm"
 msgstr "命令客戶端使用 BBR 流量控制算法"
 

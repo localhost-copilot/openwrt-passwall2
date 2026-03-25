@@ -567,6 +567,9 @@ msgstr "نوع احراز هویت"
 msgid "Auth Password"
 msgstr "رمز عبور احراز هویت"
 
+msgid "Client BBR Flow Control"
+msgstr "کنترل BBR مشتری"
+
 msgid "Commands the client to use the BBR flow control algorithm"
 msgstr "به کلاینت دستور می‌دهد تا از الگوریتم کنترل جریان BBR استفاده کند"
 

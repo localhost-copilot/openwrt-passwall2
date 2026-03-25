@@ -568,6 +568,9 @@ msgstr "Тип аутентификации"
 msgid "Auth Password"
 msgstr "Пароль аутентификации"
 
+msgid "Client BBR Flow Control"
+msgstr "Управление клиентом BBR"
+
 msgid "Commands the client to use the BBR flow control algorithm"
 msgstr "Включает использование алгоритма управления потоком BBR на клиенте"
 
