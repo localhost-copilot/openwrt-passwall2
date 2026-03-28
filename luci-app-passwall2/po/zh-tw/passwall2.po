@@ -586,6 +586,9 @@ msgstr "QUIC 連接接收窗口"
 msgid "QUIC concurrent bidirectional streams"
 msgstr "QUIC 並發双向流的最大數量"
 
+msgid "QUIC KeepAlive interval"
+msgstr "QUIC KeepAlive 間隔"
+
 msgid "Disable MTU detection"
 msgstr "禁用 MTU 檢測"
 

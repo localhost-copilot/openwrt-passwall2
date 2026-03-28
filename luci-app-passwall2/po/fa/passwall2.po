@@ -594,6 +594,9 @@ msgstr "پنجره دریافت اتصال QUIC"
 msgid "QUIC concurrent bidirectional streams"
 msgstr "جریان‌های دوطرفه همزمان QUIC"
 
+msgid "QUIC KeepAlive interval"
+msgstr "فاصله QUIC KeepAlive"
+
 msgid "Disable MTU detection"
 msgstr "غیرفعال کردن تشخیص MTU"
 

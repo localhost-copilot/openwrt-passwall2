@@ -595,6 +595,9 @@ msgstr "Размер окна приёма соединения QUIC"
 msgid "QUIC concurrent bidirectional streams"
 msgstr "Макс. количество одновременных двунаправленных потоков QUIC"
 
+msgid "QUIC KeepAlive interval"
+msgstr "Интервал QUIC KeepAlive"
+
 msgid "Disable MTU detection"
 msgstr "Отключить определение MTU"
 
