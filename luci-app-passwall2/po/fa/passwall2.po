@@ -1341,6 +1341,9 @@ msgstr "اجازه ناامن (allowInsecure)"
 msgid "Whether unsafe connections are allowed. When checked, Certificate validation will be skipped."
 msgstr "آیا اتصالات ناامن مجاز هستند. در صورت تیک خوردن، اعتبارسنجی گواهی نادیده گرفته می‌شود."
 
+msgid "Used when the node link does not include this parameter."
+msgstr "زمانی استفاده می‌شود که لینک گره شامل این پارامتر نباشد."
+
 msgid "%s Node Use Type"
 msgstr "نوع استفاده گره %s"
 

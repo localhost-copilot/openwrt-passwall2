@@ -1333,6 +1333,9 @@ msgstr "允許不安全連接"
 msgid "Whether unsafe connections are allowed. When checked, Certificate validation will be skipped."
 msgstr "是否允許不安全連接。當勾選時，將跳過證書驗證。"
 
+msgid "Used when the node link does not include this parameter."
+msgstr "當節點連結未包含該參數時，將使用此設定。"
+
 msgid "%s Node Use Type"
 msgstr "%s 節點使用類型"
 

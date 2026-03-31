@@ -1342,6 +1342,9 @@ msgstr "Пропускать проверку сертификата"
 msgid "Whether unsafe connections are allowed. When checked, Certificate validation will be skipped."
 msgstr "Разрешить соединения без проверки сертификата. При включении валидация будет пропущена."
 
+msgid "Used when the node link does not include this parameter."
+msgstr "Используется, если в ссылке на узел этот параметр отсутствует."
+
 msgid "%s Node Use Type"
 msgstr "Тип использования сервера %s"
 
