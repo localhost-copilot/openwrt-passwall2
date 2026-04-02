@@ -20,9 +20,6 @@ local function _n(name)
 	return option_prefix .. name
 end
 
-o = s:option(ListValue, _n("protocol"), translate("Protocol"))
-o:value("udp", "UDP")
-
 o = s:option(Value, _n("address"), translate("Address (Support Domain Name)"))
 
 o = s:option(Value, _n("port"), translate("Port"))
