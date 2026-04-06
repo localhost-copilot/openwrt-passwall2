@@ -734,7 +734,7 @@ function gen_config(var)
 	local no_run = var["no_run"]
 
 	local dns_domain_rules = {}
-	local dns = nil
+	local dns = {}
 	local fakedns = nil
 	local inbounds = {}
 	local outbounds = {}
@@ -1365,13 +1365,31 @@ function gen_config(var)
 			}
 		end
 	end
-	
+
+	dns = {
+		tag = "dns-global",
+		hosts = {},
+		disableCache = (dns_cache and dns_cache == "0") and true or false,
+		disableFallback = true,
+		disableFallbackIfMatch = true,
+		servers = {},
+		queryStrategy = "UseIP"
+	}
+
+	local dns_servers = {}
+
+	table.insert(dns_servers, {
+		server = {
+			tag = "local",
+			address = "localhost"
+		}
+	})
+
 	if dns_listen_port then
 		local direct_dns_tag = "dns-in-direct"
 		local remote_dns_tag = "dns-in-remote"
 		local remote_fakedns_tag = "dns-in-remote-fakedns"
 		local default_dns_tag = "dns-in-default"
-		local dns_servers = {}
 
 		local _remote_dns_proto = "tcp"
 
@@ -1381,16 +1399,6 @@ function gen_config(var)
 				rules = {}
 			}
 		end
-	
-		dns = {
-			tag = "dns-global",
-			hosts = {},
-			disableCache = (dns_cache and dns_cache == "0") and true or false,
-			disableFallback = true,
-			disableFallbackIfMatch = true,
-			servers = {},
-			queryStrategy = "UseIP"
-		}
 	
 		local dns_host = ""
 		if flag == "global" then
@@ -1510,6 +1518,39 @@ function gen_config(var)
 				})
 			end
 		end
+
+		local dnsmasq_server_domain = api.get_dnsmasq_server_domain()
+		if next(dnsmasq_server_domain) then
+			local new_dns_servers = {}
+			for domain, v in pairs(dnsmasq_server_domain) do
+				if not new_dns_servers[v.dnsmasq_dns] then
+					new_dns_servers[v.dnsmasq_dns] = {
+						server = {
+							tag = v.dnsmasq_dns,
+							address = v.server,
+							port = v.port,
+							queryStrategy = (direct_dns_query_strategy and direct_dns_query_strategy ~= "") and direct_dns_query_strategy or "UseIP"
+						},
+						domain = {}
+					}
+				end
+				table.insert(new_dns_servers[v.dnsmasq_dns].domain, domain)
+			end
+			for k, v in pairs(new_dns_servers) do
+				table.insert(dns_domain_rules, 1, {
+					shunt_rule_name = k,
+					outboundTag = "direct",
+					dns_server = v.server,
+					domain = v.domain
+				})
+				table.insert(routing.rules, 1, {
+					network = "udp",
+					ip = v.server.address,
+					port = v.server.port,
+					outboundTag = "direct"
+				})
+			end
+		end
 	
 		if dns_listen_port then
 			table.insert(inbounds, {
@@ -1590,7 +1631,9 @@ function gen_config(var)
 					if value.domain and value.outboundTag then
 						local dns_server = nil
 						local dns_outboundTag = value.outboundTag
-						if value.outboundTag == "direct" then
+						if value.dns_server then
+							dns_server = api.clone(value.dns_server)
+						elseif value.outboundTag == "direct" then
 							dns_server = api.clone(_direct_dns)
 						else
 							if value.fakedns then
@@ -1657,15 +1700,6 @@ function gen_config(var)
 			table.insert(routing.rules, default_rule)
 		end
 
-		local dns_hosts_len = 0
-		for key, value in pairs(dns.hosts) do
-			dns_hosts_len = dns_hosts_len + 1
-		end
-
-		if dns_hosts_len == 0 then
-			dns.hosts = nil
-		end
-
 		local content = flag .. node_id .. jsonc.stringify(routing.rules)
 		if api.cacheFileCompareToLogic(CACHE_TEXT_FILE, content) == false then
 			--clear ipset/nftset
@@ -1699,6 +1733,10 @@ function gen_config(var)
 				end)
 			end
 		end
+	end
+
+	if not next(dns.hosts) then
+		dns.hosts = nil
 	end
 
 	if redir_port then
