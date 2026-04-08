@@ -400,6 +400,8 @@ ln_run() {
 
 	${file_func:-log 1 "${ln_name}"} "$@" >${output} 2>&1 &
 
+	[ -n "$NO_REC_PROCESS" ] && return
+
 	process_count=$(ls $TMP_SCRIPT_FUNC_PATH | grep -v "^_" | wc -l)
 	process_count=$((process_count + 1))
 	echo "${file_func:-log 1 "${ln_name}"} $@ >${output}" > $TMP_SCRIPT_FUNC_PATH/$process_count
