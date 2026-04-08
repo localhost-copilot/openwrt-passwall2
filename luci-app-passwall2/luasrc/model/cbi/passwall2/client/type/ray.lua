@@ -731,6 +731,12 @@ o.default = o.keylist[1]
 o:depends({ [_n("domain_resolver")] = "tcp" })
 o:depends({ [_n("domain_resolver")] = "udp" })
 
+o = s:option(ListValue, _n("domain_strategy"), translate("Domain Strategy"), translate("If is domain name, The requested domain name will be resolved to IP before connect."))
+o.default = ""
+o:value("", translate("Auto"))
+o:value("UseIPv4", translate("IPv4 Only"))
+o:value("UseIPv6", translate("IPv6 Only"))
+
 local protocols = s.fields[_n("protocol")].keylist
 if #protocols > 0 then
 	for i, v in ipairs(protocols) do
@@ -738,6 +744,7 @@ if #protocols > 0 then
 			s.fields[_n("address")]:depends({ [_n("protocol")] = v })
 			s.fields[_n("port")]:depends({ [_n("protocol")] = v })
 			s.fields[_n("domain_resolver")]:depends({ [_n("protocol")] = v })
+			s.fields[_n("domain_strategy")]:depends({ [_n("protocol")] = v })
 
 			if v ~= "hysteria2" then
 				s.fields[_n("tcp_fast_open")]:depends({ [_n("protocol")] = v })

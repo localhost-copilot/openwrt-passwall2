@@ -134,6 +134,7 @@ function gen_outbound(flag, node, tag, proxy_table)
 			streamSettings = (node.streamSettings or node.protocol == "vmess" or node.protocol == "vless" or node.protocol == "socks" or node.protocol == "shadowsocks" or node.protocol == "trojan" or node.protocol == "hysteria") and {
 				sockopt = {
 					mark = 255,
+					domainStrategy = node.domain_strategy or "UseIP",
 					tcpFastOpen = (node.tcp_fast_open == "1") and true or nil,
 					tcpMptcp = (node.tcpMptcp == "1") and true or nil
 				},
@@ -414,12 +415,11 @@ function gen_outbound(flag, node, tag, proxy_table)
 			end
 			GLOBAL.DNS_SERVER[node_id] = {
 				tag = dns_tag,
-				queryStrategy = "UseIP",  -- TODO
+				queryStrategy = node.domain_strategy or "UseIP",
 				address = config_address,
 				port = server_port,
 				domains = {"full:" .. node.address}
 			}
-			result.streamSettings.sockopt.domainStrategy = "UseIP"
 		end
 
 	end
