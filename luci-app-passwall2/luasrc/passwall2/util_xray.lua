@@ -7,6 +7,10 @@ local appname = api.appname
 local fs = api.fs
 local CACHE_PATH = api.CACHE_PATH
 
+local GLOBAL = {
+	DNS_SERVER = {}
+}
+
 local xray_version = api.get_app_version("xray")
 
 local function get_domain_excluded()
@@ -392,6 +396,30 @@ function gen_outbound(flag, node, tag, proxy_table)
 			if result.streamSettings.tlsSettings then
 				result.streamSettings.tlsSettings.alpn = alpn
 			end
+		end
+
+		if api.datatypes.hostname(node.address) and (node.domain_resolver == "tcp" or node.domain_resolver == "udp") and node.domain_resolver_dns then
+			local dns_tag = node_id .. "_dns"
+			local dns_proto = node.domain_resolver
+			local server_address = node.domain_resolver_dns
+			local server_port = 53
+			local split = api.split(server_address, ":")
+			if #split > 1 then
+				server_address = split[1]
+				server_port = tonumber(split[#split])
+			end
+			local config_address = server_address
+			if dns_proto == "tcp" then
+				config_address = dns_proto .. "://" .. server_address .. ":" .. server_port
+			end
+			GLOBAL.DNS_SERVER[node_id] = {
+				tag = dns_tag,
+				queryStrategy = "UseIP",  -- TODO
+				address = config_address,
+				port = server_port,
+				domains = {"full:" .. node.address}
+			}
+			result.streamSettings.sockopt.domainStrategy = "UseIP"
 		end
 
 	end
@@ -1386,6 +1414,19 @@ function gen_config(var)
 		end
 	end
 
+	local dns_servers = {}
+	local direct_dns_tag = "dns-in-direct"
+	local remote_dns_tag = "dns-in-remote"
+	local remote_fakedns_tag = "dns-in-remote-fakedns"
+	local default_dns_tag = "dns-in-default"
+
+	for i, v in pairs(GLOBAL.DNS_SERVER) do
+		table.insert(dns_servers, {
+			server = v,
+			outboundTag = "direct"
+		})
+	end
+
 	dns = {
 		tag = "dns-global",
 		hosts = {},
@@ -1396,8 +1437,6 @@ function gen_config(var)
 		queryStrategy = "UseIP"
 	}
 
-	local dns_servers = {}
-
 	table.insert(dns_servers, {
 		server = {
 			tag = "local",
@@ -1406,11 +1445,6 @@ function gen_config(var)
 	})
 
 	if dns_listen_port then
-		local direct_dns_tag = "dns-in-direct"
-		local remote_dns_tag = "dns-in-remote"
-		local remote_fakedns_tag = "dns-in-remote-fakedns"
-		local default_dns_tag = "dns-in-default"
-
 		local _remote_dns_proto = "tcp"
 
 		if not routing then
@@ -1538,39 +1572,6 @@ function gen_config(var)
 				})
 			end
 		end
-
-		local dnsmasq_server_domain = api.get_dnsmasq_server_domain()
-		if next(dnsmasq_server_domain) then
-			local new_dns_servers = {}
-			for domain, v in pairs(dnsmasq_server_domain) do
-				if not new_dns_servers[v.dnsmasq_dns] then
-					new_dns_servers[v.dnsmasq_dns] = {
-						server = {
-							tag = v.dnsmasq_dns,
-							address = v.server,
-							port = v.port,
-							queryStrategy = (direct_dns_query_strategy and direct_dns_query_strategy ~= "") and direct_dns_query_strategy or "UseIP"
-						},
-						domain = {}
-					}
-				end
-				table.insert(new_dns_servers[v.dnsmasq_dns].domain, domain)
-			end
-			for k, v in pairs(new_dns_servers) do
-				table.insert(dns_domain_rules, 1, {
-					shunt_rule_name = k,
-					outboundTag = "direct",
-					dns_server = v.server,
-					domain = v.domain
-				})
-				table.insert(routing.rules, 1, {
-					network = "udp",
-					ip = v.server.address,
-					port = v.server.port,
-					outboundTag = "direct"
-				})
-			end
-		end
 	
 		if dns_listen_port then
 			table.insert(inbounds, {
@@ -1673,7 +1674,6 @@ function gen_config(var)
 							dns_server = nil
 						end
 						if dns_server then
-							dns_server.finalQuery = true
 							dns_server.domains = value.domain
 							if value.shunt_rule_name then
 								dns_server.tag = "dns-in-" .. value.shunt_rule_name
@@ -1683,25 +1683,6 @@ function gen_config(var)
 								server = dns_server
 							})
 						end
-					end
-				end
-			end
-
-			for i = #dns_servers, 1, -1 do
-				local value = dns_servers[i]
-				if value.server.tag ~= direct_dns_tag and value.server.tag ~= remote_dns_tag then
-					-- DNS rule must be at the front, prevents being matched by rules.
-					if value.outboundTag and value.server.address ~= "fakedns" then
-						table.insert(routing.rules, 1, {
-							inboundTag = {
-								value.server.tag
-							},
-							outboundTag = value.outboundTag,
-						})
-					end
-					if (value.server.domains and #value.server.domains > 0) or value.server.tag == default_dns_tag then
-						-- Only keep default DNS server or has domains DNS server.
-						table.insert(dns.servers, 1, value.server)
 					end
 				end
 			end
@@ -1757,6 +1738,25 @@ function gen_config(var)
 
 	if not next(dns.hosts) then
 		dns.hosts = nil
+	end
+
+	for i = #dns_servers, 1, -1 do
+		local value = dns_servers[i]
+		if value.server.tag ~= direct_dns_tag and value.server.tag ~= remote_dns_tag then
+			-- DNS rule must be at the front, prevents being matched by rules.
+			if value.outboundTag and value.server.address ~= "fakedns" then
+				table.insert(routing.rules, 1, {
+					inboundTag = {
+						value.server.tag
+					},
+					outboundTag = value.outboundTag,
+				})
+			end
+			if (value.server.domains and #value.server.domains > 0) or value.server.tag == default_dns_tag then
+				-- Only keep default DNS server or has domains DNS server.
+				table.insert(dns.servers, 1, value.server)
+			end
+		end
 	end
 
 	if redir_port then
