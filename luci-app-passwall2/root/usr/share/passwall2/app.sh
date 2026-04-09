@@ -180,38 +180,17 @@ run_xray() {
 		[ -n "$remote_dns_client_ip" ] && json_add_string "remote_dns_client_ip" "${remote_dns_client_ip}"
 		local _json2_arg="$(json_dump)"
 
-		local independent_dns
-		if [ -z "${independent_dns}" ]; then
-			local _json2_keys key
-			json_load "${_json2_arg}"
-			json_get_keys _json2_keys
-			for key in ${_json2_keys}; do
-				json_get_var "_json2_$key" "$key"
-			done
-			json_load "${_json1_arg}"
-			for key in ${_json2_keys}; do
-				eval "local _v=\$_json2_$key"
-				json_add_string "$key" "$_v"
-			done
-		else
-			dns_remote_listen_port=$(get_new_port $(expr ${direct_dnsmasq_listen_port:-${dns_listen_port}} + 1) udp)
-			V2RAY_DNS_REMOTE_CONFIG="${TMP_PATH}/${flag}_dns_remote.json"
-			V2RAY_DNS_REMOTE_LOG="${TMP_PATH}/${flag}_dns_remote.log"
-			V2RAY_DNS_REMOTE_LOG="/dev/null"
-			json_load "${_json2_arg}"
-			json_add_string "dns_out_tag" "remote"
-			json_add_string "dns_listen_port" "${dns_remote_listen_port}"
-			json_add_string "remote_dns_outbound_socks_address" "127.0.0.1"
-			json_add_string "remote_dns_outbound_socks_port" "${socks_port}"
-			_json2_arg="$(json_dump)"
-			lua $UTIL_XRAY gen_dns_config "${_json2_arg}" > $V2RAY_DNS_REMOTE_CONFIG
-			ln_run "$XRAY_BIN" "xray" $V2RAY_DNS_REMOTE_LOG run -c "$V2RAY_DNS_REMOTE_CONFIG"
-
-			json_load "${_json1_arg}"
-			json_add_string "remote_dns_udp_port" "${dns_remote_listen_port}"
-			json_add_string "remote_dns_udp_server" "127.0.0.1"
-			json_add_string "remote_dns_query_strategy" "${remote_dns_query_strategy}"
-		fi
+		local _json2_keys key
+		json_load "${_json2_arg}"
+		json_get_keys _json2_keys
+		for key in ${_json2_keys}; do
+			json_get_var "_json2_$key" "$key"
+		done
+		json_load "${_json1_arg}"
+		for key in ${_json2_keys}; do
+			eval "local _v=\$_json2_$key"
+			json_add_string "$key" "$_v"
+		done
 	}
 
 	[ -n "${redir_port}" ] && {
