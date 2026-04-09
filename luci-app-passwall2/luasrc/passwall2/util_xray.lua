@@ -28,6 +28,35 @@ local function get_domain_excluded()
 	return hosts
 end
 
+function parseDNS(str)
+	local result_dns_server
+	-- [proto]://[ip]
+	-- [proto]://[ip]:[port]
+	-- https://[ip]/[path]
+	-- https://[ip]:[port]/[path]
+	local _a = api.parseURL(str)
+	if _a then
+		if _a.protocol == "tcp" or _a.protocol == "udp" or _a.protocol == "https" then
+			result_dns_server = {
+				address = str
+			}
+			if _a.protocol == "udp" then
+				result_dns_server.address = _a.hostname
+			end
+			if _a.port then
+				result_dns_server.port = _a.port
+			else
+				if _a.protocol == "https" then
+					result_dns_server.port = 443
+				else
+					result_dns_server.port = 53
+				end
+			end
+		end
+	end
+	return result_dns_server
+end
+
 function gen_outbound(flag, node, tag, proxy_table)
 	local result = nil
 	if node then
@@ -1451,12 +1480,22 @@ function gen_config(var)
 		queryStrategy = "UseIP"
 	}
 
-	table.insert(dns_servers, {
-		server = {
-			tag = "local",
-			address = "localhost"
+	local _direct_dns = nil
+	if direct_dns_udp_server then
+		_direct_dns = {
+			tag = direct_dns_tag,
+			address = direct_dns_udp_server,
+			port = tonumber(direct_dns_udp_port) or 53,
+			queryStrategy = (direct_dns_query_strategy and direct_dns_query_strategy ~= "") and direct_dns_query_strategy or "UseIP"
 		}
-	})
+
+		if _direct_dns.address then
+			table.insert(dns_servers, {
+				outboundTag = "direct",
+				server = _direct_dns
+			})
+		end
+	end
 
 	if dns_listen_port then
 		local _remote_dns_proto = "tcp"
@@ -1556,8 +1595,7 @@ function gen_config(var)
 				server = _remote_fakedns
 			})
 		end
-	
-		local _direct_dns = nil
+
 		if direct_dns_udp_server then
 			local domain = {}
 			local nodes_domain_text = sys.exec('uci show passwall2 | grep ".address=" | cut -d "\'" -f 2 | grep "[a-zA-Z]$" | sort -u')
@@ -1565,24 +1603,10 @@ function gen_config(var)
 				table.insert(domain, "full:" .. w)
 			end)
 			if #domain > 0 then
-				table.insert(dns_domain_rules, 1, {
-					shunt_rule_name = "logic-vpslist",
-					outboundTag = "direct",
-					domain = domain
-				})
-			end
-
-			_direct_dns = {
-				tag = direct_dns_tag,
-				address = direct_dns_udp_server,
-				port = tonumber(direct_dns_udp_port) or 53,
-				queryStrategy = (direct_dns_query_strategy and direct_dns_query_strategy ~= "") and direct_dns_query_strategy or "UseIP",
-			}
-
-			if _direct_dns.address then
-				table.insert(dns_servers, {
-					outboundTag = "direct",
-					server = _direct_dns
+				table.insert(dns.servers, 1, {
+					tag = "local",
+					address = "localhost",
+					domains = domain
 				})
 			end
 		end
@@ -1771,6 +1795,21 @@ function gen_config(var)
 				table.insert(dns.servers, 1, value.server)
 			end
 		end
+	end
+
+	local has_default_dns_server = "0"
+	for index, value in ipairs(dns.servers) do
+		if value.domains == nil then
+			has_default_dns_server = "1"
+			break
+		end
+	end
+
+	if #dns.servers == 0 or not has_default_server == "0" then
+		table.insert(dns.servers, 1, {
+			tag = "local",
+			address = "localhost"
+		})
 	end
 
 	if redir_port then
@@ -1987,6 +2026,151 @@ function gen_proto_config(var)
 		log = {
 			loglevel = "warning"
 		},
+		inbounds = inbounds,
+		outbounds = outbounds,
+		routing = routing
+	}
+	return jsonc.stringify(config, 1)
+end
+
+function gen_front_dns_config(var)
+	local dns_listen_port = var["dns_listen_port"]
+	local direct_dns_udp_server = var["direct_dns_udp_server"]
+	local direct_dns_udp_port = var["direct_dns_udp_port"]
+	local default_dns_udp_server = var["default_dns_udp_server"]
+	local default_dns_udp_port = var["default_dns_udp_port"]
+
+	local queryStrategy = "UseIP"
+	local dns = {
+		tag = "dns-global-direct",
+		disableCache = false,
+		disableFallback = true,
+		disableFallbackIfMatch = true,
+		queryStrategy = queryStrategy,
+		servers = {}
+	}
+	local inbounds = {}
+	local outbounds = {}
+	local routing = {
+		rules = {}
+	}
+
+	table.insert(outbounds, {
+		tag = "direct",
+		protocol = "freedom",
+		settings = {
+			domainStrategy = queryStrategy
+		},
+		streamSettings = {
+			sockopt = {
+				mark = 255
+			}
+		}
+	})
+
+	if default_dns_udp_server then
+		table.insert(dns.servers, {
+			tag = "default",
+			address = default_dns_udp_server,
+			port = tonumber(default_dns_udp_port) or 53,
+			queryStrategy = queryStrategy,
+		})
+	end
+
+	local direct_dns_shunt = uci:get(appname, "@global[0]", "direct_dns_shunt") or ""
+	if #direct_dns_shunt > 0 then
+		local dns_server = {}
+		string.gsub(direct_dns_shunt, '[^' .. "\r\n" .. ']+', function(w)
+			if w:find("#") == 1 then return end
+			local domain = sys.exec(string.format("echo -n $(echo %s | awk -F ' ' '{print $1}')", w))
+			local dns = sys.exec(string.format("echo -n $(echo %s | awk -F ' ' '{print $2}')", w))
+			if domain ~= "" and dns ~= "" then
+				local new_dns_server = parseDNS(dns)
+				if new_dns_server then
+					if not dns_server[dns] then
+						dns_server[dns] = {}
+					end
+					dns_server[dns].tag = dns
+					dns_server[dns].queryStrategy = queryStrategy
+					dns_server[dns].address = new_dns_server.address
+					dns_server[dns].port = new_dns_server.port
+					dns_server[dns].finalQuery = true
+					if not dns_server[dns].domains then
+						dns_server[dns].domains = {}
+					end
+					table.insert(dns_server[dns].domains, domain)
+				end
+			end
+		end)
+		for k, v in pairs(dns_server) do
+			table.insert(dns.servers, v)
+			table.insert(routing.rules, {
+				inboundTag = {
+					v.tag
+				},
+				outboundTag = "direct"
+			})
+		end
+	end
+
+	if direct_dns_udp_server then
+		local node_domain = {}
+		local nodes_domain_text = sys.exec('uci show passwall2 | grep ".address=" | cut -d "\'" -f 2 | grep "[a-zA-Z]$" | sort -u')
+		string.gsub(nodes_domain_text, '[^' .. "\r\n" .. ']+', function(w)
+			table.insert(node_domain, "full:" .. w)
+		end)
+		if #node_domain > 0 then
+			table.insert(dns.servers, {
+				tag = "direct",
+				address = direct_dns_udp_server,
+				port = tonumber(direct_dns_udp_port) or 53,
+				queryStrategy = queryStrategy,
+				domains = node_domain
+			})
+		end
+	end
+
+	table.insert(inbounds, {
+		tag = "dns-in",
+		listen = "127.0.0.1",
+		port = tonumber(dns_listen_port),
+		protocol = "dokodemo-door",
+		settings = {
+			address = "0.0.0.0",
+			network = "tcp,udp"
+		}
+	})
+
+	table.insert(outbounds, {
+		tag = "dns-out",
+		protocol = "dns",
+		proxySettings = {
+			tag = "direct"
+		},
+		settings = {
+			address = direct_dns_udp_server,
+			port = tonumber(direct_dns_udp_port) or 53,
+			network = "udp",
+			nonIPQuery = "skip",
+			blockTypes = {
+				65
+			}
+		}
+	})
+
+	table.insert(routing.rules, {
+		inboundTag = {
+			"dns-in"
+		},
+		outboundTag = "dns-out"
+	})
+
+	local config = {
+		log = {
+			dnsLog = true,
+			loglevel = "debug"
+		},
+		dns = dns,
 		inbounds = inbounds,
 		outbounds = outbounds,
 		routing = routing
@@ -2236,6 +2420,7 @@ function gen_dns_config(var)
 end
 
 _G.gen_config = gen_config
+_G.gen_front_dns_config = gen_front_dns_config
 _G.gen_proto_config = gen_proto_config
 _G.gen_dns_config = gen_dns_config
 
