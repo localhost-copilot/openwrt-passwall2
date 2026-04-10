@@ -461,7 +461,11 @@ function gen_outbound(flag, node, tag, proxy_table)
 				queryStrategy = node.domain_strategy or "UseIP",
 				address = config_address,
 				port = config_port,
-				domains = {"full:" .. node.address}
+				domains = {"full:" .. node.address},
+				finalQuery = true,
+				disableCache = false,
+				serveStale = true,
+				serveExpiredTTL = 30,
 			}
 		end
 
@@ -1604,7 +1608,7 @@ function gen_config(var)
 			end)
 			if #domain > 0 then
 				table.insert(dns.servers, 1, {
-					tag = "local",
+					tag = "dns-in-vpslist",
 					address = "localhost",
 					domains = domain
 				})
@@ -2121,7 +2125,7 @@ function gen_front_dns_config(var)
 		end)
 		if #node_domain > 0 then
 			table.insert(dns.servers, {
-				tag = "direct",
+				tag = "dns-in-vpslist",
 				address = direct_dns_udp_server,
 				port = tonumber(direct_dns_udp_port) or 53,
 				queryStrategy = queryStrategy,
