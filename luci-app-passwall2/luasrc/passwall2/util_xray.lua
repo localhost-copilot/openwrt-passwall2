@@ -1610,7 +1610,11 @@ function gen_config(var)
 				table.insert(dns.servers, 1, {
 					tag = "dns-in-vpslist",
 					address = "localhost",
-					domains = domain
+					domains = domain,
+					finalQuery = true,
+					disableCache = false,
+					serveStale = true,
+					serveExpiredTTL = 30,
 				})
 			end
 		end
@@ -2129,7 +2133,11 @@ function gen_front_dns_config(var)
 				address = direct_dns_udp_server,
 				port = tonumber(direct_dns_udp_port) or 53,
 				queryStrategy = queryStrategy,
-				domains = node_domain
+				domains = node_domain,
+				finalQuery = true,
+				disableCache = false,
+				serveStale = true,
+				serveExpiredTTL = 30,
 			})
 		end
 	end
