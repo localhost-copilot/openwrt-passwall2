@@ -612,12 +612,7 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 		if info.net == 'kcp' or info.net == 'mkcp' then
 			info.net = "mkcp"
 			result.mkcp_guise = info.type
-			result.mkcp_mtu = 1350
-			result.mkcp_tti = 50
-			result.mkcp_uplinkCapacity = 5
-			result.mkcp_downlinkCapacity = 20
-			result.mkcp_readBufferSize = 2
-			result.mkcp_writeBufferSize = 2
+			result.mkcp_seed = info.seed
 		end
 		if info.net == 'quic' then
 			result.quic_guise = info.type
@@ -878,12 +873,6 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 					if params.type == 'kcp' or params.type == 'mkcp' then
 						result.transport = "mkcp"
 						result.mkcp_guise = params.headerType or "none"
-						result.mkcp_mtu = 1350
-						result.mkcp_tti = 50
-						result.mkcp_uplinkCapacity = 5
-						result.mkcp_downlinkCapacity = 20
-						result.mkcp_readBufferSize = 2
-						result.mkcp_writeBufferSize = 2
 						result.mkcp_seed = params.seed
 					end
 					if params.type == 'quic' then
@@ -1095,12 +1084,6 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 			if params.type == 'kcp' or params.type == 'mkcp' then
 				result.transport = "mkcp"
 				result.mkcp_guise = params.headerType or "none"
-				result.mkcp_mtu = 1350
-				result.mkcp_tti = 50
-				result.mkcp_uplinkCapacity = 5
-				result.mkcp_downlinkCapacity = 20
-				result.mkcp_readBufferSize = 2
-				result.mkcp_writeBufferSize = 2
 				result.mkcp_seed = params.seed
 			end
 			if params.type == 'quic' then
@@ -1242,12 +1225,7 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 			if params.type == 'kcp' or params.type == 'mkcp' then
 				result.transport = "mkcp"
 				result.mkcp_guise = params.headerType or "none"
-				result.mkcp_mtu = 1350
-				result.mkcp_tti = 50
-				result.mkcp_uplinkCapacity = 5
-				result.mkcp_downlinkCapacity = 20
-				result.mkcp_readBufferSize = 2
-				result.mkcp_writeBufferSize = 2
+				result.mkcp_seed = params.seed
 			end
 			if params.type == 'quic' then
 				result.quic_guise = params.headerType or "none"
