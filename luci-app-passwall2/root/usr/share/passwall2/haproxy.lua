@@ -18,7 +18,7 @@ end
 local var = api.get_args(arg)
 local haproxy_path = var["-path"]
 local haproxy_conf = var["-conf"]
-local haproxy_dns = var["-dns"] or "119.29.29.29:53,223.5.5.5:53"
+local haproxy_dns = "127.0.0.1"
 
 local cpu_thread = sys.exec('echo -n $(cat /proc/cpuinfo | grep "processor" | wc -l)') or "1"
 local health_check_type = uci:get(appname, "@global_haproxy[0]", "health_check_type") or "tcp"

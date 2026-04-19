@@ -867,10 +867,11 @@ add_firewall_rule() {
 			local dns_port=$(echo $auto_dns | awk -F '#' '{print $2}')
 			if [[ "$dns_address" == *::* ]]; then
 				nft "insert rule $NFTABLE_NAME PSW2_OUTPUT_MANGLE_V6 meta l4proto udp ip6 daddr ${dns_address} $(factor ${dns_port:-53} "udp dport") counter return"
+				log_i18n 1 "$(i18n "Add direct DNS to %s: %s" "nftables" "[${dns_address}]:${dns_port:-53}")"
 			else
 				nft "insert rule $NFTABLE_NAME PSW2_OUTPUT_MANGLE ip protocol udp ip daddr ${dns_address} $(factor ${dns_port:-53} "udp dport") counter return"
+				log_i18n 1 "$(i18n "Add direct DNS to %s: %s" "nftables" "${dns_address}:${dns_port:-53}")"
 			fi
-			log_i18n 1 "$(i18n "Add direct DNS to %s: %s" "nftables" "${dns_address}:${dns_port:-53}")"
 		done
 	}
 

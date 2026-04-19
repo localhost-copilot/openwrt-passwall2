@@ -835,7 +835,7 @@ add_firewall_rule() {
 			local dns_port=$(echo $auto_dns | awk -F '#' '{print $2}')
 			if [[ "$dns_address" == *::* ]]; then
 				$ip6t_m -I PSW2_OUTPUT -p udp -d ${dns_address} --dport ${dns_port:-53} -j RETURN
-				log_i18n 1 "$(i18n "Add direct DNS to %s: %s" "ip6tables" "${dns_address}:${dns_port:-53}")"
+				log_i18n 1 "$(i18n "Add direct DNS to %s: %s" "ip6tables" "[${dns_address}]:${dns_port:-53}")"
 			else
 				$ipt_m -I PSW2_OUTPUT -p udp -d ${dns_address} --dport ${dns_port:-53} -j RETURN
 				log_i18n 1 "$(i18n "Add direct DNS to %s: %s" "iptables" "${dns_address}:${dns_port:-53}")"
