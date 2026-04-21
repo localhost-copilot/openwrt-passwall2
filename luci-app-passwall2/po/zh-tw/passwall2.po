@@ -2225,6 +2225,9 @@ msgstr "節點：%s:%s，權重：%s"
 msgid "[Rule update] instance is running; please try again later."
 msgstr "[規則更新]實例正在運行，請稍後再試..."
 
+msgid "[Subscription] instance is running; [Rule Update] queue and wait."
+msgstr "[訂閱]實例正在運行，[規則更新]進入隊列等待..."
+
 msgid "Start updating the rules..."
 msgstr "開始更新規則..."
 
@@ -2380,6 +2383,9 @@ msgstr "代理"
 
 msgid "[Subscription] instance is running; please try again later."
 msgstr "[訂閱]實例正在運行，請稍後再試..."
+
+msgid "[Rule Update] instance is running; [Subscription] queue and wait."
+msgstr "[規則更新]實例正在運行，[訂閱]進入隊列等待..."
 
 msgid "Start subscribing..."
 msgstr "開始訂閱..."

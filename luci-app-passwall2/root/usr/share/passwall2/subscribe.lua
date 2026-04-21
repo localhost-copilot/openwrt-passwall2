@@ -2163,20 +2163,30 @@ local execute = function()
 	end
 end
 
-function check_instance(action)
-	local lock_file = "/var/lock/" .. appname .. "_subscribe.lock"
+local function check_instance(action)
+	local sub_lock = "/var/lock/" .. appname .. "_subscribe.lock"
+	local rule_lock = "/var/lock/" .. appname .. "_rule_update.lock"
+
 	if action == "start" then
 		math.randomseed(os.time() + math.floor(os.clock() * 1000))
 		api.nixio.nanosleep(0, math.random(100, 1000) * 1000000)
-		if fs.access(lock_file) then
+		if fs.access(sub_lock) then
 			log(0, i18n.translatef("[Subscription] instance is running; please try again later.") .. "\n")
 			os.exit(0)
 		else
-			luci.sys.call("touch " .. lock_file)
+			luci.sys.call("touch " .. sub_lock)
 			uci:revert(appname)
 		end
 	elseif action == "end" then
-		luci.sys.call("rm -f " .. lock_file)
+		luci.sys.call("rm -f " .. sub_lock)
+		return
+	end
+
+	if fs.access(rule_lock) then
+		log(0, i18n.translatef("[Rule Update] instance is running; [Subscription] queue and wait.") .. "\n")
+	end
+	while fs.access(rule_lock) do
+		api.nixio.nanosleep(2, 0)
 	end
 end
 
