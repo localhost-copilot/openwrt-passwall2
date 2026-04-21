@@ -2222,6 +2222,9 @@ msgstr "入口 %s:%s"
 msgid "Node: %s:%s, Weight: %s"
 msgstr "节点：%s:%s，权重：%s"
 
+msgid "[Rule update] instance is running; please try again later."
+msgstr "[规则更新]实例正在运行，请稍后再试..."
+
 msgid "Start updating the rules..."
 msgstr "开始更新规则..."
 

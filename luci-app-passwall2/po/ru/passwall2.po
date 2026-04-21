@@ -2228,6 +2228,9 @@ msgstr "Вход %s:%s"
 msgid "Node: %s:%s, Weight: %s"
 msgstr "Сервер: %s:%s, вес: %s"
 
+msgid "[Rule update] instance is running; please try again later."
+msgstr "Экземпляр [Обновление правила] запущен; пожалуйста, попробуйте позже."
+
 msgid "Start updating the rules..."
 msgstr "Начало обновления правил..."
 

@@ -2230,6 +2230,9 @@ msgstr "ورودی %s:%s"
 msgid "Node: %s:%s, Weight: %s"
 msgstr "گره: %s:%s، وزن: %s"
 
+msgid "[Rule update] instance is running; please try again later."
+msgstr "نمونه [به‌روزرسانی قانون] در حال اجرا است؛ لطفاً بعداً دوباره امتحان کنید."
+
 msgid "Start updating the rules..."
 msgstr "شروع به‌روزرسانی قوانین..."
 
