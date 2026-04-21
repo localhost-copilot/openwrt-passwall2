@@ -2381,6 +2381,9 @@ msgstr "Содержимое подписки [%s] пусто. Возможно,
 msgid "Proxy"
 msgstr "Прокси"
 
+msgid "[Subscription] instance is running; please try again later."
+msgstr "Экземпляр [Подписки] запущен; пожалуйста, попробуйте позже."
+
 msgid "Start subscribing..."
 msgstr "Начало подписки..."
 
