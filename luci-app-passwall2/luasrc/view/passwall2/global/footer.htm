@@ -144,7 +144,7 @@ local appname = api.appname
 			}
 		}
 	}
-	document.addEventListener("DOMContentLoaded", function () {
+	document.addEventListener("DOMContentLoaded", () => setTimeout(() => {
 		const hiddenSelect = document.getElementById("cbid.<%=appname%>.<%=self.global_cfgid%>.node");
 		let o_val = hiddenSelect.value
 		const o_hasItem = shunt_list.find(element => element.id == o_val);
@@ -185,7 +185,7 @@ local appname = api.appname
 			}
 		}
 		go();
-	});
+	}, 100));
 	//setTimeout("go()", 1000);
 	//]]>
 </script>
