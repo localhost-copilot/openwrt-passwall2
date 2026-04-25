@@ -1617,9 +1617,9 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 end
 
 local function curl(url, file, ua, mode)
-	if not url or url == "" then return 404 end
+	if not url or url == "" then return 22, 404 end
 	local curl_args = {
-		"-skL", "-w %{http_code}", "--retry 3", "--connect-timeout 3", "-H 'Accept-Encoding: identity'"
+		"-fskL", "-w %{http_code}", "--retry 3", "--connect-timeout 3", "-H 'Accept-Encoding: identity'"
 	}
 	if ua and ua ~= "" and ua ~= "curl" then
 		ua = (ua == "passwall2") and ("passwall2/" .. api.get_version()) or ua
@@ -1634,7 +1634,7 @@ local function curl(url, file, ua, mode)
 	else
 		return_code, result = api.curl_auto(url, file, curl_args)
 	end
-	return tonumber(result)
+	return return_code, tonumber(result)
 end
 
 function get_headers()
@@ -2123,8 +2123,9 @@ local execute = function()
 				local result = (not access_mode) and i18n.translatef("Auto") or (access_mode == "direct" and i18n.translatef("Direct") or (access_mode == "proxy" and i18n.translatef("Proxy") or i18n.translatef("Auto")))
 				log(1, i18n.translatef("Start subscribing: %s", '【' .. remark .. '】' .. url .. ' [' .. result .. ']'))
 				tmp_file = "/tmp/" .. cfgid
-				value.http_code = curl(url, tmp_file, ua, access_mode)
-				if value.http_code ~= 200 then
+				local return_code
+				return_code, value.http_code = curl(url, tmp_file, ua, access_mode)
+				if return_code ~= 0 then
 					fail_list[#fail_list + 1] = value
 					luci.sys.call("rm -f " .. tmp_file)
 				end
