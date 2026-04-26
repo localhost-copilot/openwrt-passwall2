@@ -1657,10 +1657,21 @@ function gen_config(var)
 					address = direct_dns_udp_server,
 					port = tonumber(direct_dns_udp_port) or 53,
 					network = "udp",
-					nonIPQuery = "skip",
-					blockTypes = {
-						65
-					}
+					nonIPQuery = (api.compare_versions(xray_version, "<", "26.4.25")) and "skip" or nil, -- Todo is to remove it
+					blockTypes = (api.compare_versions(xray_version, "<", "26.4.25")) and { 65 } or nil,  -- Todo is to remove it
+					rules = (api.compare_versions(xray_version, ">", "26.4.17")) and {
+						{
+							qtype = "1,28",
+							action = "hijack"
+						},
+						{
+							qtype = 65,
+							action = "reject",
+						},
+						{
+							action = "direct"
+						}
+					} or nil
 				},
 				proxySettings = {
 					tag = "direct"
@@ -1671,7 +1682,16 @@ function gen_config(var)
 					address = remote_dns_udp_server,
 					port = tonumber(remote_dns_udp_port) or 53,
 					network = _remote_dns_proto or "tcp",
-					nonIPQuery = "reject"
+					nonIPQuery = (api.compare_versions(xray_version, "<", "26.4.25")) and "reject" or nil, -- Todo is to remove it
+					rules = (api.compare_versions(xray_version, ">", "26.4.17")) and {
+						{
+							qtype = "1,28",
+							action = "hijack"
+						},
+						{
+							action = "reject"
+						}
+					} or nil
 				}
 			}
 			local type_dns = direct_type_dns
