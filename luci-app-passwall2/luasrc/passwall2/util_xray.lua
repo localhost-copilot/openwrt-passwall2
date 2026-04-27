@@ -470,7 +470,6 @@ function gen_outbound(flag, node, tag, proxy_table)
 				finalQuery = true,
 				disableCache = false,
 				serveStale = true,
-				serveExpiredTTL = 30,
 			}
 		end
 
@@ -1639,7 +1638,6 @@ function gen_config(var)
 					finalQuery = true,
 					disableCache = false,
 					serveStale = true,
-					serveExpiredTTL = 30,
 				})
 			end
 		end
@@ -1738,6 +1736,7 @@ function gen_config(var)
 							end
 						end
 						local dns_block_mode = "host"
+						dns_block_mode = ""
 						if dns_block_mode == "host" and dns_outboundTag == "blackhole" then
 							for d_i, d_k in ipairs(value.domain) do
 								dns.hosts[d_k] = "0.0.0.0"
@@ -2162,7 +2161,6 @@ function gen_front_dns_config(var)
 				finalQuery = true,
 				disableCache = false,
 				serveStale = true,
-				serveExpiredTTL = 30,
 			})
 		end
 	end
