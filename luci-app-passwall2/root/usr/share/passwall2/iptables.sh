@@ -618,6 +618,8 @@ filter_direct_node_list() {
 }
 
 update_wan_sets() {
+	[ -z "$(command -v get_wan_ips)" ] && . "$UTILS_PATH"
+
 	local WAN_IP=$(get_wan_ips ip4)
 	[ -n "$WAN_IP" ] && {
 		ipset -F "$IPSET_WAN"
@@ -1105,7 +1107,7 @@ start() {
 }
 
 stop() {
-	[ -z "$(command -v log_i18n)" ] && . /usr/share/passwall2/utils.sh
+	[ -z "$(command -v log_i18n)" ] && . "$UTILS_PATH"
 	del_firewall_rule
 	destroy_ipset $IPSET_PROXY_LAN
 	destroy_ipset $IPSET_PROXY_LAN6

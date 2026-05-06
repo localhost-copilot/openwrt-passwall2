@@ -681,6 +681,8 @@ mwan3_start() {
 }
 
 update_wan_sets() {
+	[ -z "$(command -v get_wan_ips)" ] && . "$UTILS_PATH"
+
 	local WAN_IP=$(get_wan_ips ip4)
 	[ -n "$WAN_IP" ] && {
 		nft flush set $NFTABLE_NAME $NFTSET_WAN
@@ -1116,7 +1118,7 @@ start() {
 }
 
 stop() {
-	[ -z "$(command -v log_i18n)" ] && . /usr/share/passwall2/utils.sh
+	[ -z "$(command -v log_i18n)" ] && . "$UTILS_PATH"
 	del_firewall_rule
 	destroy_nftset $NFTSET_PROXY_LAN
 	destroy_nftset $NFTSET_PROXY_LAN6
