@@ -169,21 +169,58 @@ if load_balancing_options then -- [[ Load balancing Start ]]
 	o:value("_direct", translate("Direct Connection"))
 	o:depends({ [_n("protocol")] = "_balancing" })
 	o.template = appname .. "/cbi/nodes_listvalue"
-	local function check_fallback_chain(fb)
-		for k, v in pairs(fallback_list) do
-			if v.fallback == fb then
-				fallback_list[k] = nil
-				check_fallback_chain(v.id)
+	-- Maximum number of fallback nesting layers
+	local MAX_FALLBACK_DEPTH = 3
+	-- Check if a loop will form.
+	local function will_loop(start_id, target_id, depth)
+		depth = depth or 0
+		-- Recursion stops after the maximum depth is exceeded.
+		if depth >= MAX_FALLBACK_DEPTH then
+			return false
+		end
+		for _, v in ipairs(fallback_list) do
+			if v.id == target_id then
+				local fb = v.fallback
+				-- No fallback
+				if not fb or fb == "" or fb == "_direct" then
+					return false
+				end
+				-- Loopback detected
+				if fb == start_id then
+					return true
+				end
+				-- Continue recursive checking
+				return will_loop(start_id, fb, depth + 1)
 			end
 		end
+		return false
 	end
-	-- Check the fallback chain and remove the balancer node that would form a closed loop.
-	if is_balancer then
-		check_fallback_chain(arg[1])
+	-- Get fallback chain depth
+	local function get_fallback_depth(id, depth)
+		depth = depth or 0
+		if depth >= MAX_FALLBACK_DEPTH then
+			return depth
+		end
+		for _, v in ipairs(fallback_list) do
+			if v.id == id then
+				local fb = v.fallback
+				if not fb or fb == "" or fb == "_direct" then
+					return depth
+				end
+				return get_fallback_depth(fb, depth + 1)
+			end
+		end
+		return depth
 	end
-	for i, v in ipairs(fallback_list) do
-		o:value(v.id, v.remark)
-		o.group[#o.group+1] = (v.group and v.group ~= "") and v.group or translate("default")
+	for _, v in ipairs(fallback_list) do
+		local depth = get_fallback_depth(v.id)
+		-- Once the maximum number of nested doll layers is exceeded, further selection of the balancer is not allowed.
+		if depth < MAX_FALLBACK_DEPTH
+			and not will_loop(arg[1], v.id)
+		then
+			o:value(v.id, v.remark)
+			o.group[#o.group + 1] = (v.group and v.group ~= "") and v.group or translate("default")
+		end
 	end
 	for k1, v1 in pairs(node_list) do
 		if k1 == "socks_list" or k1 == "normal_list" or k1 == "urltest_list" then
