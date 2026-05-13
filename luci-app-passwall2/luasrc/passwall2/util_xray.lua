@@ -794,6 +794,9 @@ function gen_config_server(node)
 				config.outbounds[index][k] = nil
 			end
 		end
+		if value.protocol == "freedom" and api.compare_versions(xray_version, "<", "26.5.3") then -- Todo is to remove it
+			value.settings = nil
+		end
 	end
 
 	return config
@@ -1264,9 +1267,9 @@ function gen_config(var)
 								interface = node.iface
 							}
 						},
-						settings = {
+						settings = (api.compare_versions(xray_version, ">", "26.4.25")) and {  -- Todo: Remove version check
 							finalRules = {{ action = "allow" }}
-						}
+						} or nil
 					}
 					sys.call(string.format("mkdir -p %s && touch %s/%s", api.TMP_IFACE_PATH, api.TMP_IFACE_PATH, node.iface))
 				end
@@ -2080,7 +2083,12 @@ function gen_proto_config(var)
 	end
 
 	table.insert(outbounds, {
-		protocol = "freedom", tag = "direct", settings = {finalRules = {{ action = "allow" }}}, sockopt = {mark = 255}
+		protocol = "freedom",
+		tag = "direct",
+		settings = (api.compare_versions(xray_version, ">", "26.4.25")) and { -- Todo: Remove version check
+			finalRules = {{ action = "allow" }}
+		} or nil,
+		sockopt = {mark = 255}
 	})
 	
 	local config = {
