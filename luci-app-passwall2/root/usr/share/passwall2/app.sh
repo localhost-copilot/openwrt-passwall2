@@ -386,6 +386,10 @@ run_socks() {
 		fi
 	fi
 
+	if [ -n "${error_msg}" ] && [ "$(config_n_get $node hysteria2_realms)" = "1" ]; then
+		unset error_msg
+	fi
+
 	[ -n "${error_msg}" ] && {
 		[ "$bind" != "127.0.0.1" ] && log 1 "$(i18n "Socks node: [%s]%s, start failed %s:%s %s" "${remarks}" "${tmp}" "${bind}" "${socks_port}" "${error_msg}")"
 		return 1
