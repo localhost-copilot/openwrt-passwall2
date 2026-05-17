@@ -112,12 +112,12 @@ run_xray() {
 			local direct_ipset_conf=${GLOBAL_ACL_PATH}/dns_${flag}_direct.conf
 			[ -n "$(echo ${flag} | grep '^acl')" ] && direct_ipset_conf=${TMP_ACL_PATH}/${sid}/dns_${flag}_direct.conf
 			if [ "${nftflag}" = "1" ]; then
-				local direct_nftset4="passwall2_${node}_white"
-				local direct_nftset6="passwall2_${node}_white6"
+				local direct_nftset4="psw2_${node}_white"
+				local direct_nftset6="psw2_${node}_white6"
 				local direct_nftset="4#inet#passwall2#${direct_nftset4},6#inet#passwall2#${direct_nftset6}"
 			else
-				local direct_ipset4="passwall2_${node}_white"
-				local direct_ipset6="passwall2_${node}_white6"
+				local direct_ipset4="psw2_${node}_white"
+				local direct_ipset6="psw2_${node}_white6"
 				local direct_ipset="${direct_ipset4},${direct_ipset6}"
 			fi
 			run_ipset_dns_server listen_port=${direct_dnsmasq_listen_port} server_dns=${AUTO_DNS} ipset="${direct_ipset}" nftset="${direct_nftset}" config_file=${direct_ipset_conf}
@@ -251,12 +251,12 @@ run_singbox() {
 			local direct_ipset_conf=${GLOBAL_ACL_PATH}/dns_${flag}_direct.conf
 			[ -n "$(echo ${flag} | grep '^acl')" ] && direct_ipset_conf=${TMP_ACL_PATH}/${sid}/dns_${flag}_direct.conf
 			if [ "${nftflag}" = "1" ]; then
-				local direct_nftset4="passwall2_${node}_white"
-				local direct_nftset6="passwall2_${node}_white6"
+				local direct_nftset4="psw2_${node}_white"
+				local direct_nftset6="psw2_${node}_white6"
 				local direct_nftset="4#inet#passwall2#${direct_nftset4},6#inet#passwall2#${direct_nftset6}"
 			else
-				local direct_ipset4="passwall2_${node}_white"
-				local direct_ipset6="passwall2_${node}_white6"
+				local direct_ipset4="psw2_${node}_white"
+				local direct_ipset6="psw2_${node}_white6"
 				local direct_ipset="${direct_ipset4},${direct_ipset6}"
 			fi
 			run_ipset_dns_server listen_port=${direct_dnsmasq_listen_port} server_dns=${AUTO_DNS} ipset="${direct_ipset}" nftset="${direct_nftset}" config_file=${direct_ipset_conf}
@@ -982,11 +982,11 @@ run_ipset_chinadns_ng() {
 	
 	[ -n "${ipset}" ] && {
 		set_names=$ipset
-		vps_set_names="passwall2_vps,passwall2_vps6"
+		vps_set_names="psw2_vps,psw2_vps6"
 	}
 	[ -n "${nftset}" ] && {
 		set_names=$(echo ${nftset} | awk -F, '{printf "%s,%s", substr($1,3), substr($2,3)}' | sed 's/#/@/g')
-		vps_set_names="inet@passwall2@passwall2_vps,inet@passwall2@passwall2_vps6"
+		vps_set_names="inet@passwall2@psw2_vps,inet@passwall2@psw2_vps6"
 	}
 	cat <<-EOF > $config_file
 		bind-addr 127.0.0.1
