@@ -1592,3 +1592,29 @@ function get_dnsmasq_server_domain()
 	end
 	return dnsmasq_server_t
 end
+
+function parse_realm_uri(uri)
+	if type(uri) ~= "string" then return nil end
+	-- realm://token@server/realm_id?query
+	local token, server_url, realm_id, query = trim(uri):match("^realm://([^@]+)@([^/]+)/([^?]*)%??(.*)$")
+	if not token or not server_url or not realm_id then return nil end
+	realm_id = realm_id:gsub("/+$", "")
+	local realm = {
+		token = token,
+		server_url = server_url,
+		realm_id = realm_id
+	}
+	-- 解析 query 中的 stun=
+	if query and query ~= "" then
+		local stun_servers = {}
+		for key, value in query:gmatch("([^&=?]+)=([^&]+)") do
+			if key == "stun" and value ~= "" then
+				stun_servers[#stun_servers + 1] = value
+			end
+		end
+		if #stun_servers > 0 then
+			realm.stun_servers = stun_servers
+		end
+	end
+	return realm
+end
