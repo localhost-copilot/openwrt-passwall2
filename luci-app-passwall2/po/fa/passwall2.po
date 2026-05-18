@@ -564,9 +564,6 @@ msgstr "اصلی"
 msgid "Transport Plugin"
 msgstr "افزونه انتقال"
 
-msgid "Shadowsocks secondary encryption"
-msgstr "رمزنگاری ثانویه Shadowsocks"
-
 msgid "Obfs Type"
 msgstr "نوع مبهم‌سازی (Obfs)"
 
@@ -2289,9 +2286,6 @@ msgstr "Xray از افزونه %s پشتیبانی نمی‌کند."
 
 msgid "Plugin options Incomplete."
 msgstr "گزینه‌های افزونه ناقص است."
-
-msgid "shadowsocks-libev unsupport 2022 encryption."
-msgstr "shadowsocks-libev از رمزنگاری 2022 پشتیبانی نمی‌کند."
 
 msgid "Please replace %s to support %s transmission method."
 msgstr "لطفا برای پشتیبانی از روش انتقال %s، %s را جایگزین کنید."

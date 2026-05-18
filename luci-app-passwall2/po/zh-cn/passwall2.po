@@ -556,9 +556,6 @@ msgstr "原版"
 msgid "Transport Plugin"
 msgstr "传输层插件"
 
-msgid "Shadowsocks secondary encryption"
-msgstr "Shadowsocks 二次加密"
-
 msgid "Obfs Type"
 msgstr "混淆类型"
 
@@ -2275,9 +2272,6 @@ msgstr "Xray 不支持 %s 插件。"
 
 msgid "Plugin options Incomplete."
 msgstr "插件选项不完整。"
-
-msgid "shadowsocks-libev unsupport 2022 encryption."
-msgstr "shadowsocks-libev 不支持2022加密。"
 
 msgid "Please replace %s to support %s transmission method."
 msgstr "请更换 %s 以支持 %s 传输方式。"

@@ -559,9 +559,6 @@ msgstr "Оригинал"
 msgid "Transport Plugin"
 msgstr "Плагин транспорта"
 
-msgid "Shadowsocks secondary encryption"
-msgstr "Дополнительное шифрование Shadowsocks"
-
 msgid "global_padding"
 msgstr "Включить padding-заполнение"
 
@@ -2287,9 +2284,6 @@ msgstr "Xray не поддерживает плагин %s."
 
 msgid "Plugin options Incomplete."
 msgstr "Опции плагина указаны не полностью."
-
-msgid "shadowsocks-libev unsupport 2022 encryption."
-msgstr "shadowsocks-libev не поддерживает шифрование 2022."
 
 msgid "Please replace %s to support %s transmission method."
 msgstr "Пожалуйста, замените %s, чтобы поддержать метод передачи %s."

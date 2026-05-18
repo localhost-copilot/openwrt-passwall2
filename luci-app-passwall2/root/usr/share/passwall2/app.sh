@@ -466,18 +466,6 @@ run_socks() {
 		lua $UTIL_SS gen_config "${_json_arg}" > $config_file
 		[ -z "$no_run" ] && ln_run ${QUEUE_RUN} "$(first_type ssr-local)" "ssr-local" $log_file -c "$config_file" -v -u
 	;;
-	ss)
-		json_add_string "local_addr" "${bind}"
-		json_add_string "local_port" "${socks_port}"
-		json_add_string "mode" "tcp_and_udp"
-		[ -z "$no_run" ] && {
-			local plugin_sh="${config_file%.json}_plugin.sh"
-			json_add_string "plugin_sh" "${plugin_sh}"
-		}
-		local _json_arg="$(json_dump)"
-		lua $UTIL_SS gen_config "${_json_arg}" > $config_file
-		[ -z "$no_run" ] && ln_run ${QUEUE_RUN} "$(first_type ss-local)" "ss-local" $log_file -c "$config_file" -v
-	;;
 	ss-rust)
 		json_add_string "local_socks_address" "${bind}"
 		json_add_string "local_socks_port" "${socks_port}"
