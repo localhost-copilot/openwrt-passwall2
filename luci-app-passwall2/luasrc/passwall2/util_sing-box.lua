@@ -1810,6 +1810,10 @@ function gen_config(var)
 		tag = "local"
 	})
 
+	route.default_domain_resolver = {
+		server = "local"
+	}
+
 	if direct_dns_udp_server then
 		table.insert(dns.servers, {
 			tag = "direct",
@@ -2161,10 +2165,6 @@ function gen_config(var)
 			type = "direct",
 			tag = "direct",
 			routing_mark = 255,
-			domain_resolver = {
-				server = "local",
-				strategy = "prefer_ipv6"
-			}
 		})
 		for index, value in ipairs(config.outbounds) do
 			if not value["_flag_proxy_tag"] and not value.detour and value["_id"] and value.server and value.server_port and not no_run then
@@ -2325,10 +2325,6 @@ function gen_front_dns_config(var)
 		type = "direct",
 		tag = "direct",
 		routing_mark = 255,
-		domain_resolver = {
-			server = "direct",
-			strategy = direct_strategy
-		}
 	})
 
 	local direct_dns_shunt = uci:get(appname, "@global[0]", "direct_dns_shunt") or ""
@@ -2398,6 +2394,10 @@ function gen_front_dns_config(var)
 				domain = node_domain
 			})
 		end
+		route.default_domain_resolver = {
+			server = "direct",
+			strategy = direct_strategy
+		}
 	end
 
 	if default_dns_udp_server then
