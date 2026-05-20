@@ -94,6 +94,7 @@ if not arg_select_proto:find("_") then
 	load_normal_options = true
 end
 
+local netdev_list = api.get_network_devices()
 local node_list = api.get_node_list()
 
 if load_urltest_options then -- [[ URLTest Start ]]
@@ -198,8 +199,10 @@ end -- [[ URLTest End ]]
 
 if load_iface_options then -- [[ Custom Interface Start ]]
 	o = s:option(Value, _n("iface"), translate("Interface"))
-	o.default = "eth1"
 	o:depends({ [_n("protocol")] = "_iface" })
+	for _, d in ipairs(netdev_list) do
+		o:value(d.name, d.label)
+	end
 end -- [[ Custom Interface End ]]
 
 
@@ -877,8 +880,7 @@ if not load_shunt_options then
 	o3 = s:option(Value, _n("outbound_iface"), translate("Outbound Interface"))
 	o3:depends({ [_n("chain_proxy")] = "3" })
 	o3:value("", translate("All"))
-	local iface = api.get_network_devices()
-	for _, d in ipairs(iface) do
+	for _, d in ipairs(netdev_list) do
 		o3:value(d.name, d.label)
 	end
 
