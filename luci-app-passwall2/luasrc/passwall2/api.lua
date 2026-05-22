@@ -1367,6 +1367,11 @@ function set_apply_on_parse(map)
 end
 
 function luci_types(id, m, s, type_name, option_prefix)
+	local fv_type
+	local field_type = s.fields["type"]
+	if field_type then
+		fv_type = field_type:formvalue(id)
+	end
 	local rewrite_option_table = {}
 	for key, value in pairs(s.fields) do
 		if key:find(option_prefix) == 1 then
@@ -1434,6 +1439,10 @@ function luci_types(id, m, s, type_name, option_prefix)
 				end
 			else
 				s.fields[key]:depends({ type = type_name })
+			end
+
+			if fv_type and fv_type ~= type_name then
+				s.fields[key].rmempty = true
 			end
 		end
 	end
