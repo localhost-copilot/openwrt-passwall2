@@ -1656,6 +1656,12 @@ msgstr "نام گواهی TLS (CertName)"
 msgid "TLS is used to verify the leaf certificate name."
 msgstr "TLS برای تأیید نام گواهی برگ (Leaf Certificate) استفاده می‌شود."
 
+msgid "TLS Certificate (PEM)"
+msgstr "گواهی TLS (PEM)"
+
+msgid "Full certificate (chain), PEM format."
+msgstr "گواهی کامل (زنجیره‌ای)، فرمت PEM."
+
 msgid "ECH Config"
 msgstr "پیکربندی ECH"
 

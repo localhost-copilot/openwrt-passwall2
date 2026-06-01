@@ -1657,6 +1657,12 @@ msgstr "Имя TLS-сертификата (CertName)"
 msgid "TLS is used to verify the leaf certificate name."
 msgstr "Используется TLS для проверки имени конечного сертификата."
 
+msgid "TLS Certificate (PEM)"
+msgstr "Сертификат TLS (PEM)"
+
+msgid "Full certificate (chain), PEM format."
+msgstr "Полный сертификат (цепочка), формат PEM."
+
 msgid "ECH Config"
 msgstr "Конфигурация ECH"
 
