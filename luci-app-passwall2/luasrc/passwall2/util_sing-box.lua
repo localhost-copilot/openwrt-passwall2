@@ -1797,12 +1797,6 @@ function gen_config(var)
 		end
 	end
 
-	table.insert(route.rules, {
-		action = "route",
-		ip_is_private = true,
-		outbound = "direct"
-	})
-
 	if COMMON.default_outbound_tag then
 		route.final = COMMON.default_outbound_tag
 	end
