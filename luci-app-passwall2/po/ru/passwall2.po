@@ -2392,3 +2392,6 @@ msgstr "Подписка завершена..."
 
 msgid "Processing, please wait…"
 msgstr "Обработка, пожалуйста, подождите…"
+
+msgid "Invalid Realm URL."
+msgstr "Неверный URL-адрес области."

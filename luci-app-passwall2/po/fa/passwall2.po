@@ -2394,3 +2394,6 @@ msgstr "اشتراک کامل شد..."
 
 msgid "Processing, please wait…"
 msgstr "در حال پردازش، لطفا صبر کنید…"
+
+msgid "Invalid Realm URL."
+msgstr "آدرس اینترنتی (URL) نامعتبر است."

@@ -2386,3 +2386,6 @@ msgstr "訂閱完毕..."
 
 msgid "Processing, please wait…"
 msgstr "正在處理，請稍候。"
+
+msgid "Invalid Realm URL."
+msgstr "Realm URL 不正確。"
