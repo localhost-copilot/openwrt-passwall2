@@ -581,10 +581,10 @@ msgid "Certificate fingerprint"
 msgstr "證書指紋"
 
 msgid "Max upload Mbps"
-msgstr "最大上行(Mbps)"
+msgstr "最大上行（Mbps）"
 
 msgid "Max download Mbps"
-msgstr "最大下行(Mbps)"
+msgstr "最大下行（Mbps）"
 
 msgid "QUIC stream receive window"
 msgstr "QUIC 流接收窗口"
@@ -2389,3 +2389,9 @@ msgstr "正在處理，請稍候。"
 
 msgid "Invalid Realm URL."
 msgstr "Realm URL 不正確。"
+
+msgid "Gecko Packet Size (min)"
+msgstr "Gecko 包大小（最小）"
+
+msgid "Gecko Packet Size (max)"
+msgstr "Gecko 包大小（最大）"

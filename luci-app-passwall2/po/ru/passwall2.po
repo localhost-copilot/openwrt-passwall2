@@ -2395,3 +2395,9 @@ msgstr "Обработка, пожалуйста, подождите…"
 
 msgid "Invalid Realm URL."
 msgstr "Неверный URL-адрес области."
+
+msgid "Gecko Packet Size (min)"
+msgstr "Размер упаковки Gecko (мин)"
+
+msgid "Gecko Packet Size (max)"
+msgstr "Размер упаковки Gecko (макс)"

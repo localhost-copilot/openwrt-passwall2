@@ -2397,3 +2397,9 @@ msgstr "در حال پردازش، لطفا صبر کنید…"
 
 msgid "Invalid Realm URL."
 msgstr "آدرس اینترنتی (URL) نامعتبر است."
+
+msgid "Gecko Packet Size (min)"
+msgstr "اندازه بسته Gecko (دقیقه)"
+
+msgid "Gecko Packet Size (max)"
+msgstr "اندازه بسته Gecko (حداکثر)"
