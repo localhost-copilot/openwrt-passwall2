@@ -168,8 +168,45 @@ o = s:option(Flag, "accept_icmpv6", translate("Hijacking ICMPv6 (IPv6 PING)"))
 o:depends("ipv6_tproxy", true)
 o.default = 0
 
-o = s:option(DynamicList, "force_proxy_lan_ip", translate("Force Proxy LAN IP"), translate("By default, commonly used internal network IP ranges will be connect directly (not entering the core). If you want a certain network range to go through a proxy, please add it here."))
-o.datatype = "or(ipmask4,ipmask6)"
+function clean_text(text)
+	local nbsp = string.char(0xC2, 0xA0)
+	local fullwidth_space = string.char(0xE3, 0x80, 0x80)
+	return text
+		:gsub("\t", " ")
+		:gsub(nbsp, " ")
+		:gsub(fullwidth_space, " ")
+		:gsub("^%s+", "")
+		:gsub("%s+$", "\n")
+		:gsub("\r\n", "\n")
+		:gsub("[ \t]*\n[ \t]*", "\n")
+end
+
+local direct_ip_file = "/usr/share/passwall2/direct_ip"
+o = s:option(TextValue, "direct_ip", translate("Direct IP List"), "<font color='red'>" .. translate("These had been joined ip addresses will connect directly (not entering the core).") .. "</font>")
+o.rows = 15
+o.wrap = "off"
+o.cfgvalue = function(self, section)
+	return fs.readfile(direct_ip_file) or ""
+end
+o.write = function(self, section, value)
+	fs.writefile(direct_ip_file, value:gsub("\r\n", "\n"))
+end
+o.remove = function(self, section, value)
+	fs.writefile(direct_ip_file, "")
+end
+o.validate = function(self, value)
+	local ipmasks= {}
+	value = clean_text(value)
+	string.gsub(value, '[^' .. "\r\n" .. ']+', function(w) table.insert(ipmasks, api.trim(w)) end)
+	for index, ipmask in ipairs(ipmasks) do
+		if ipmask ~= "" and not ipmask:find("^#") and not ipmask:find("^geoip:") then
+			if not ( datatypes.ipmask4(ipmask) or datatypes.ipmask6(ipmask) ) then
+				return nil, ipmask .. " " .. translate("Not valid IP format, please re-enter!")
+			end
+		end
+	end
+	return value
+end
 
 if has_xray then
 	s_xray = m:section(TypedSection, "global_xray", "Xray " .. translate("Settings"))

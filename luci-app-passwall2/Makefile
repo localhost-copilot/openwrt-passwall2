@@ -136,6 +136,7 @@ endef
 define Package/$(PKG_NAME)/conffiles
 /etc/config/passwall2
 /etc/config/passwall2_server
+/usr/share/passwall2/direct_ip
 /usr/share/passwall2/domains_excluded
 endef
 

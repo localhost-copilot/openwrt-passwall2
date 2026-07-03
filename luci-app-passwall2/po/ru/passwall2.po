@@ -757,11 +757,11 @@ msgstr "Перехват ICMP (PING)"
 msgid "Hijacking ICMPv6 (IPv6 PING)"
 msgstr "Перехват ICMPv6 (IPv6 PING)"
 
-msgid "Force Proxy LAN IP"
-msgstr "Принудительное использование IP-адреса локальной сети (Local IP)"
+msgid "Direct IP List"
+msgstr "Список прямых IP-адресов"
 
-msgid "By default, commonly used internal network IP ranges will be connect directly (not entering the core). If you want a certain network range to go through a proxy, please add it here."
-msgstr "По умолчанию, часто используемые диапазоны IP-адресов внутренней сети будут подключаться напрямую (без доступа к ядру сети). Если вы хотите, чтобы определенный диапазон IP-адресов сети проходил через прокси-сервер, укажите это здесь."
+msgid "These had been joined ip addresses will connect directly (not entering the core)."
+msgstr "Эти объединенные IP-адреса будут подключаться напрямую (не входя в ядро ​​сети)."
 
 msgid "Sniffing"
 msgstr "Анализ трафика"
