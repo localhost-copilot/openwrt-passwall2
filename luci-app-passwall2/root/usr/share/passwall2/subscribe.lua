@@ -481,7 +481,7 @@ local function parseClashNode(node, add_mode, group, sub_cfg)
 	local sub_vmess_type = DEFAULT_VMESS_TYPE
 	local sub_vless_type = DEFAULT_VLESS_TYPE
 	local sub_hysteria2_type = DEFAULT_HYSTERIA2_TYPE
-	local sub_hy_up_mbps, sub_hy_down_mbps = 1000, 1000
+	local sub_hy_up_mbps, sub_hy_down_mbps
 	if sub_cfg then
 		if sub_cfg.allowInsecure and sub_cfg.allowInsecure ~= "1" then
 			sub_allowinsecure = nil
@@ -800,7 +800,7 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 	local sub_vmess_type = DEFAULT_VMESS_TYPE
 	local sub_vless_type = DEFAULT_VLESS_TYPE
 	local sub_hysteria2_type = DEFAULT_HYSTERIA2_TYPE
-	local sub_hy_up_mbps, sub_hy_down_mbps = 1000, 1000
+	local sub_hy_up_mbps, sub_hy_down_mbps
 	if sub_cfg then
 		if sub_cfg.allowInsecure and sub_cfg.allowInsecure ~= "1" then
 			sub_allowinsecure = nil
@@ -1597,6 +1597,10 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 			end
 			result.encryption = params.encryption or "none"
 			result.flow = params.flow
+
+			if (not params.security or params.security == "") and params.flow then
+				params.security = "tls"
+			end
 
 			result.tls = "0"
 			if params.security == "tls" or params.security == "reality" then
