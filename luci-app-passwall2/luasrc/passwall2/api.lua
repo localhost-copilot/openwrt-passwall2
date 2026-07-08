@@ -1461,7 +1461,7 @@ function luci_types(id, m, s, type_name, option_prefix)
 		end
 	end
 end
-function format_go_time(input)
+function format_go_time(input, default)
 	input = input and trim(input)
 	local N = 0
 	if input and input:match("^%d+$") then
@@ -1479,7 +1479,7 @@ function format_go_time(input)
 		end
 	end
 	if N <= 0 then
-		return "0s"
+		return default or "0s"
 	end
 	local result = ""
 	local h = math.floor(N / 3600)
