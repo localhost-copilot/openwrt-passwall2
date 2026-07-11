@@ -14,6 +14,8 @@ local GLOBAL = {
 
 local xray_version = api.get_app_version("xray")
 
+local xray_min_version = "26.3.27"
+
 local function get_domain_excluded()
 	local path = string.format("/usr/share/%s/domains_excluded", appname)
 	local content = fs.readfile(path)
@@ -808,7 +810,10 @@ function gen_config_server(node)
 			}
 		},
 		outbounds = outbounds,
-		routing = routing
+		routing = routing,
+		version = {
+			min = xray_min_version
+		}
 	}
 
 	local alpn = {}
@@ -2036,6 +2041,9 @@ function gen_config(var)
 				--     statsInboundUplink = false,
 				--     statsInboundDownlink = false
 				-- }
+			},
+			version = {
+				min = xray_min_version
 			}
 		}
 
