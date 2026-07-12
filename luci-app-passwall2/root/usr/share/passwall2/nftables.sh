@@ -696,6 +696,10 @@ add_firewall_rule() {
 	for ip in $(cat /usr/share/passwall2/direct_ip | tr -s "\r\n" "\n" | grep -v "^#" | sed -e "/^$/d"); do
 		if [[ "$ip" == *::* ]]; then
 			echo "$ip" | insert_nftset $NFTSET_DIRECT6 0
+		elif [[ "$ip" == "geoip:"* ]]; then
+			local _geoip_code=$(echo $ip | awk -F ':' '{print $2}')
+			get_geoip $_geoip_code ipv4 | grep -E "(\.((2(5[0-5]|[0-4][0-9]))|[0-1]?[0-9]{1,2})){3}" | insert_nftset $NFTSET_DIRECT "0"
+			get_geoip $_geoip_code ipv6 | grep -E "([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4}" | insert_nftset $NFTSET_DIRECT6 "0"
 		else
 			echo "$ip" | insert_nftset $NFTSET_DIRECT 0
 		fi

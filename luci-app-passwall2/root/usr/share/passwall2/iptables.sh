@@ -634,6 +634,10 @@ add_firewall_rule() {
 	for ip in $(cat /usr/share/passwall2/direct_ip | tr -s "\r\n" "\n" | grep -v "^#" | sed -e "/^$/d"); do
 		if [[ "$ip" == *::* ]]; then
 			ipset -! add $IPSET_DIRECT6 $ip
+		elif [[ "$ip" == "geoip:"* ]]; then
+			local _geoip_code=$(echo $ip | awk -F ':' '{print $2}')
+			get_geoip $_geoip_code ipv4 | grep -E "(\.((2(5[0-5]|[0-4][0-9]))|[0-1]?[0-9]{1,2})){3}" | sed -e "s/^/add $IPSET_DIRECT &/g" | awk '{print $0} END{print "COMMIT"}' | ipset -! -R
+			get_geoip $_geoip_code ipv6 | grep -E "([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4}" | sed -e "s/^/add $IPSET_DIRECT6 &/g" | awk '{print $0} END{print "COMMIT"}' | ipset -! -R
 		else
 			ipset -! add $IPSET_DIRECT $ip
 		fi
