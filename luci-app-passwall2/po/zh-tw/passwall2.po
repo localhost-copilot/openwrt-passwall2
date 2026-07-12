@@ -664,8 +664,8 @@ msgstr "單位：分鐘"
 msgid "stop automatically mode"
 msgstr "定時關閉模式"
 
-msgid "stop Time(Every day)"
-msgstr "關閉時間(每天)"
+msgid "stop Time"
+msgstr "關閉時間"
 
 msgid "stop Interval(Hour)"
 msgstr "關閉間隔(小時)"
@@ -673,8 +673,8 @@ msgstr "關閉間隔(小時)"
 msgid "start automatically mode"
 msgstr "定時開啟模式"
 
-msgid "start Time(Every day)"
-msgstr "開啟時間(每天)"
+msgid "start Time"
+msgstr "開啟時間"
 
 msgid "start Interval(Hour)"
 msgstr "開啟間隔(小時)"
@@ -682,8 +682,8 @@ msgstr "開啟間隔(小時)"
 msgid "restart automatically mode"
 msgstr "定時重啟模式"
 
-msgid "restart Time(Every day)"
-msgstr "重啟時間(每天)"
+msgid "restart Time"
+msgstr "重啟時間"
 
 msgid "restart Interval(Hour)"
 msgstr "重啟間隔(小時)"
@@ -889,17 +889,14 @@ msgstr "回滾"
 msgid "Rollbacking..."
 msgstr "回滾中..."
 
-msgid "Enable auto update rules"
-msgstr "開啟自動更新規則"
-
-msgid "Update Time(every day)"
-msgstr "更新時間(每天)"
+msgid "Update Time"
+msgstr "更新時間"
 
 msgid "Update Interval(hour)"
 msgstr "更新間隔(小時)"
 
-msgid "Update Mode"
-msgstr "更新模式"
+msgid "Auto Update Mode"
+msgstr "自動更新模式"
 
 msgid "Loop Mode"
 msgstr "循环"
@@ -996,9 +993,6 @@ msgstr "移動中"
 
 msgid "App Update"
 msgstr "组件更新"
-
-msgid "Please confirm that your firmware supports FPU."
-msgstr "請確認你的固件支持FPU。"
 
 msgid "if you want to run from memory, change the path, /tmp beginning then save the application and update it manually."
 msgstr "如果你希望从內存中運行，請更改路径，/tmp 開头，然後保存應用後，再手動更新。"
