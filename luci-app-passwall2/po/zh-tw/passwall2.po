@@ -376,6 +376,9 @@ msgstr "負載均衡"
 msgid "Node Addition Method"
 msgstr "節點新增方式"
 
+msgid "Backup Node Addition Method"
+msgstr "備用節點新增方式"
+
 msgid "Manual"
 msgstr "手動"
 

@@ -379,6 +379,9 @@ msgstr "توزیع بار"
 msgid "Node Addition Method"
 msgstr "روش افزودن گره"
 
+msgid "Backup Node Addition Method"
+msgstr "روش افزودن گره پشتیبان"
+
 msgid "Manual"
 msgstr "دستی"
 
