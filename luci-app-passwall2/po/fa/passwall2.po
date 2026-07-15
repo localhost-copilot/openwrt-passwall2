@@ -2401,3 +2401,6 @@ msgstr "اندازه بسته Gecko (دقیقه)"
 
 msgid "Gecko Packet Size (max)"
 msgstr "اندازه بسته Gecko (حداکثر)"
+
+msgid "valid time (hh:mm)"
+msgstr "زمان معتبر (ساعت:میلی‌متر)"

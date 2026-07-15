@@ -2399,3 +2399,6 @@ msgstr "Размер упаковки Gecko (мин)"
 
 msgid "Gecko Packet Size (max)"
 msgstr "Размер упаковки Gecko (макс)"
+
+msgid "valid time (hh:mm)"
+msgstr "Время действия (чч:мм)"

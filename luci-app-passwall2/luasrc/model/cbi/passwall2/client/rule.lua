@@ -1,6 +1,8 @@
 local api = require "luci.passwall2.api"
 local appname = api.appname
 
+api.set_default_cbi()
+
 m = Map(appname)
 api.set_apply_on_parse(m)
 
@@ -59,13 +61,7 @@ for t = 0, 23 do
 	end
 end
 o.default = "0:00"
-o.validate = function(self, value)
-	local b = api.is_timehhmm(value)
-	if b then
-		return value
-	end
-	return nil
-end
+o.datatype = "timehhmm"
 o:depends("update_week_mode", "0")
 o:depends("update_week_mode", "1")
 o:depends("update_week_mode", "2")
@@ -113,4 +109,4 @@ end
 
 o = s:option(DummyValue, "remarks", translate("Remarks"))
 
-return m
+return api.return_map(m)

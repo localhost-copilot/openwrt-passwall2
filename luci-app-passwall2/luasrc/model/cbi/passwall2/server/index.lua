@@ -1,4 +1,7 @@
 local api = require "luci.passwall2.api"
+local appname = api.appname
+
+api.set_default_cbi()
 
 m = Map("passwall2_server", translate("Server-Side"))
 api.set_apply_on_parse(m)
@@ -85,8 +88,8 @@ e = t:option(Flag, "log", translate("Log"))
 e.default = "1"
 e.rmempty = false
 
-m:append(Template("passwall2/server/log"))
+m:append(Template(appname .. "/server/log"))
 
-m:append(Template("passwall2/server/users_list_status"))
-return m
+m:append(Template(appname .. "/server/users_list_status"))
 
+return api.return_map(m)

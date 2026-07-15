@@ -2,6 +2,8 @@ local api = require "luci.passwall2.api"
 local appname = api.appname
 local sys = api.sys
 
+api.set_default_cbi()
+
 m = Map(appname)
 api.set_apply_on_parse(m)
 
@@ -65,4 +67,4 @@ i.cfgvalue = function(t, n)
 	return v
 end
 
-return m
+return api.return_map(m)
