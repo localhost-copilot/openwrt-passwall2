@@ -15,7 +15,8 @@ o.rmempty = false
 o.default = false
 
 -- [[ ACLs Settings ]]--
-s = m:section(TypedSection, "acl_rule")
+local cfgname = "acl_rule"
+s = m:section(TypedSection, cfgname)
 s.template = "cbi/tblsection"
 s.sortable = true
 s.anonymous = true
@@ -66,5 +67,10 @@ i.cfgvalue = function(t, n)
 	local v = Value.cfgvalue(t, n) or '-'
 	return v
 end
+
+local sortable = Template(appname .. "/cbi/sortable")
+sortable.api = api
+sortable.target_cfgname = cfgname
+m:append(sortable)
 
 return api.return_map(m)

@@ -88,7 +88,8 @@ end
 
 s:append(Template(appname .. "/rule/rule_version"))
 
-s = m:section(TypedSection, "shunt_rules", "Sing-Box/Xray " .. translate("Shunt Rule"), "<a style='color: red'>" .. translate("Please note attention to the priority, the higher the order, the higher the priority.") .. "</a>")
+local cfgname = "shunt_rules"
+s = m:section(TypedSection, cfgname, "Sing-Box/Xray " .. translate("Shunt Rule"), "<a style='color: red'>" .. translate("Please note attention to the priority, the higher the order, the higher the priority.") .. "</a>")
 s.template = "cbi/tblsection"
 s.anonymous = false
 s.addremove = true
@@ -108,5 +109,10 @@ function s.remove(e, t)
 end
 
 o = s:option(DummyValue, "remarks", translate("Remarks"))
+
+local sortable = Template(appname .. "/cbi/sortable")
+sortable.api = api
+sortable.target_cfgname = cfgname
+m:append(sortable)
 
 return api.return_map(m)
