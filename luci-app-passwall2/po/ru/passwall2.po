@@ -1652,6 +1652,12 @@ msgstr "Сертификат TLS (PEM)"
 msgid "Full certificate (chain), PEM format."
 msgstr "Полный сертификат (цепочка), формат PEM."
 
+msgid "Fetch Manually"
+msgstr "Получить вручную"
+
+msgid "Fetch Failed"
+msgstr "Не удалось получить данные."
+
 msgid "ECH Config"
 msgstr "Конфигурация ECH"
 

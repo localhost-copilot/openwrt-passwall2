@@ -1651,6 +1651,12 @@ msgstr "گواهی TLS (PEM)"
 msgid "Full certificate (chain), PEM format."
 msgstr "گواهی کامل (زنجیره‌ای)، فرمت PEM."
 
+msgid "Fetch Manually"
+msgstr "دریافت دستی"
+
+msgid "Fetch Failed"
+msgstr "واکشی ناموفق"
+
 msgid "ECH Config"
 msgstr "پیکربندی ECH"
 

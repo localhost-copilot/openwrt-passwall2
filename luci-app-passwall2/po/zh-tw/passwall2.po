@@ -1643,6 +1643,12 @@ msgstr "TLS 憑證（PEM）"
 msgid "Full certificate (chain), PEM format."
 msgstr "完整憑證（鏈），PEM 格式。"
 
+msgid "Fetch Manually"
+msgstr "手動獲取"
+
+msgid "Fetch Failed"
+msgstr "獲取失敗"
+
 msgid "ECH Config"
 msgstr "ECH 配置"
 
