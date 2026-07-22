@@ -2417,3 +2417,6 @@ msgstr "Размер упаковки Gecko (макс)"
 
 msgid "valid time (hh:mm)"
 msgstr "Время действия (чч:мм)"
+
+msgid "Disable TLS Reuse"
+msgstr "Отключить повторное использование TLS"

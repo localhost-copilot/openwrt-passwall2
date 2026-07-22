@@ -2411,3 +2411,6 @@ msgstr "Gecko 包大小（最大）"
 
 msgid "valid time (hh:mm)"
 msgstr "有效時間（hh:mm）"
+
+msgid "Disable TLS Reuse"
+msgstr "禁用 TLS 連接復用"

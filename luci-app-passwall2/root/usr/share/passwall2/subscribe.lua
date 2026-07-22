@@ -768,6 +768,9 @@ local function parseClashNode(node, add_mode, group, sub_cfg)
 			result.reality_publicKey = node["reality-opts"]["public-key"]
 			result.reality_shortId = node["reality-opts"]["short-id"]
 		end
+		if node["disable-reuse"] then
+			result.anytls_disable_reuse = "1"
+		end
 	end
 	if not result.remarks or result.remarks == "" then
 		if result.address and result.port then
