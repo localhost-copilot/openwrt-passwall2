@@ -2420,3 +2420,6 @@ msgstr "Время действия (чч:мм)"
 
 msgid "Disable TLS Reuse"
 msgstr "Отключить повторное использование TLS"
+
+msgid "Not Set"
+msgstr "Не задано"

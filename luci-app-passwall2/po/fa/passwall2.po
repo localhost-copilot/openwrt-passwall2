@@ -2422,3 +2422,6 @@ msgstr "زمان معتبر (ساعت:میلی‌متر)"
 
 msgid "Disable TLS Reuse"
 msgstr "غیرفعال کردن استفاده مجدد از TLS"
+
+msgid "Not Set"
+msgstr "تنظیم نشده"

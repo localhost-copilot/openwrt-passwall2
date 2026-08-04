@@ -2414,3 +2414,6 @@ msgstr "有效時間（hh:mm）"
 
 msgid "Disable TLS Reuse"
 msgstr "禁用 TLS 連接復用"
+
+msgid "Not Set"
+msgstr "未設置"
