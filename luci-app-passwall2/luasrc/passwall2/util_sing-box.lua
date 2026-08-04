@@ -648,6 +648,7 @@ function gen_outbound(flag, node, tag, proxy_table)
 				idle_session_timeout = "30s",
 				min_idle_session = 5,
 				disable_reuse = (node.anytls_disable_reuse == "1") and true or nil,
+				client_metadata = api.compare_versions(local_version, ">=", "1.13.16") and "anytls/0.0.13" or nil,
 				tls = tls
 			}
 		end
