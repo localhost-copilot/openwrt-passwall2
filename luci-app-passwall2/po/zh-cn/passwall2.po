@@ -334,8 +334,8 @@ msgstr "你确定要删除选择的节点吗？"
 msgid "You no select nodes !"
 msgstr "你没有选择任何节点！"
 
-msgid "Are you sure set to"
-msgstr "你确定要设为"
+msgid "Are you sure set this node?"
+msgstr "你确定要设置这个节点吗？"
 
 msgid "the server?"
 msgstr "服务器吗？"
