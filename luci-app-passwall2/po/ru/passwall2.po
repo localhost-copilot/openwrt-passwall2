@@ -971,6 +971,9 @@ msgstr "Примечание: увеличивает нагрузку на си�
 msgid "Shunt Rule"
 msgstr "Правила разделения трафика"
 
+msgid "Shunt Rule Group"
+msgstr "Группа правил шунтирования"
+
 msgid "Please note attention to the priority, the higher the order, the higher the priority."
 msgstr "Обратите внимание: правила выше в списке имеют более высокий приоритет."
 
