@@ -43,7 +43,7 @@ local socks_list = {}
 m.uci:foreach(appname, "socks", function(s)
 	if s.enabled == "1" and s.node then
 		socks_list[#socks_list + 1] = {
-			id = "Socks_" .. s[".name"],
+			id = s[".name"],
 			remark = translate("Socks Config") .. " [" .. s.port .. translate("Port") .. "]",
 			group = "Socks"
 		}
@@ -336,7 +336,7 @@ o.group = {}
 o = s2:option(DummyValue, "now_node", translate("Current Node"))
 o.rawhtml = true
 o.cfgvalue = function(_, n)
-	local current_node = api.get_cache_var("socks_" .. n)
+	local current_node = api.get_cache_var(n)
 	if current_node then
 		local node = m:get(current_node)
 		if node then

@@ -261,7 +261,7 @@ end
 
 function get_socks_log()
 	local name = http.formvalue("name")
-	local path = "/tmp/etc/passwall2/SOCKS_" .. name .. ".log"
+	local path = "/tmp/etc/passwall2/" .. name .. ".log"
 	if nixio.fs.access(path) then
 		local content = luci.sys.exec("tail -n 5000 ".. path)
 		content = content:gsub("\n", "<br />")
@@ -309,7 +309,7 @@ function socks_status()
 	local index = http.formvalue("index")
 	local id = http.formvalue("id")
 	e.index = index
-	e.socks_status = luci.sys.call(string.format("/bin/busybox top -bn1 | grep -v -E 'grep|acl/|acl_' | grep '%s/bin/' | grep '%s' | grep 'SOCKS_' > /dev/null", appname, id)) == 0
+	e.socks_status = luci.sys.call(string.format("/bin/busybox top -bn1 | grep -v -E 'grep|acl/|acl_' | grep '%s/bin/' | grep '%s' > /dev/null", appname, id)) == 0
 	local use_http = uci:get(appname, id, "http_port") or 0
 	e.use_http = 0
 	if tonumber(use_http) > 0 then

@@ -419,7 +419,7 @@ run_socks() {
 			json_add_string "logfile" "${log_file}"
 		}
 		[ -n "$no_run" ] && json_add_string "no_run" "1"
-		json_add_string "flag" "SOCKS_${flag}"
+		json_add_string "flag" "${flag}"
 		json_add_string "local_socks_address" "${bind}"
 		json_add_string "local_socks_port" "${socks_port}"
 		json_add_string "direct_dns_udp_port" "${DIRECT_DNS_UDP_PORT}"
@@ -441,7 +441,7 @@ run_socks() {
 			json_add_null "server_port"
 		}
 		[ -n "$no_run" ] && json_add_string "no_run" "1"
-		json_add_string "flag" "SOCKS_${flag}"
+		json_add_string "flag" "${flag}"
 		json_add_string "local_socks_address" "${bind}"
 		json_add_string "local_socks_port" "${socks_port}"
 		json_add_string "direct_dns_udp_port" "${DIRECT_DNS_UDP_PORT}"
@@ -535,13 +535,13 @@ socks_node_switch() {
 		local prefix pf filename
 		# Kill the SS plugin process
 		for prefix in "" "HTTP_"; do
-			pf="$TMP_PATH/${prefix}SOCKS_${flag}_plugin.pid"
+			pf="$TMP_PATH/${prefix}${flag}_plugin.pid"
 			[ -s "$pf" ] && kill -9 "$(head -n1 "$pf")" >/dev/null 2>&1
 		done
 
 		busybox pgrep -af "$TMP_BIN_PATH" | awk -v P1="${flag}" 'BEGIN{IGNORECASE=1}$0~P1 && !/acl\/|acl_/{print $1}' | xargs kill -9 >/dev/null 2>&1
 		for prefix in "" "HTTP_" "HTTP2"; do
-			rm -rf "$TMP_PATH/${prefix}SOCKS_${flag}"*
+			rm -rf "$TMP_PATH/${prefix}${flag}"*
 		done
 
 		for filename in $(ls ${TMP_SCRIPT_FUNC_PATH}); do
@@ -552,15 +552,15 @@ socks_node_switch() {
 		local bind="0.0.0.0"
 		[ "$bind_local" = "1" ] && bind="127.0.0.1"
 		local port=$(config_n_get $flag port)
-		local config_file="SOCKS_${flag}.json"
-		local log_file="SOCKS_${flag}.log"
+		local config_file="${flag}.json"
+		local log_file="${flag}.log"
 		local log=$(config_n_get $flag log 1)
 		[ "$log" == "0" ] && log_file=""
 		local http_port=$(config_n_get $flag http_port 0)
 		local http_config_file="HTTP2SOCKS_${flag}.json"
 		LOG_FILE="/dev/null"
 		run_socks flag=$flag node=$new_node bind=$bind socks_port=$port config_file=$config_file http_port=$http_port http_config_file=$http_config_file log_file=$log_file
-		set_cache_var "socks_${flag}" "$new_node"
+		set_cache_var "${flag}" "$new_node"
 		local USE_TABLES=$(get_cache_var "USE_TABLES")
 		[ -n "$USE_TABLES" ] && source $APP_PATH/${USE_TABLES}.sh filter_direct_node_list
 	}
@@ -764,14 +764,14 @@ start_socks() {
 				local bind="0.0.0.0"
 				[ "$bind_local" = "1" ] && bind="127.0.0.1"
 				local port=$(config_n_get $id port)
-				local config_file="SOCKS_${id}.json"
-				local log_file="SOCKS_${id}.log"
+				local config_file="${id}.json"
+				local log_file="${id}.log"
 				local log=$(config_n_get $id log 1)
 				[ "$log" == "0" ] && log_file=""
 				local http_port=$(config_n_get $id http_port 0)
 				local http_config_file="HTTP2SOCKS_${id}.json"
 				run_socks flag=$id node=$node bind=$bind socks_port=$port config_file=$config_file http_port=$http_port http_config_file=$http_config_file log_file=$log_file
-				set_cache_var "socks_${id}" "$node"
+				set_cache_var "${id}" "$node"
 
 				# Auto switch logic
 				local enable_autoswitch=$(config_n_get $id enable_autoswitch 0)
