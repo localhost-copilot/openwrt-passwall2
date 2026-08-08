@@ -66,6 +66,11 @@ for sid in $(uci show passwall2 | grep "@acl_rule" | cut -d '.' -sf 2 | cut -d '
 	uci -q rename passwall2.${sid}="${new_id}"
 	unset sid new_id
 done
+for sid in $(uci show passwall2 | grep "@subscribe_list" | cut -d '.' -sf 2 | cut -d '=' -sf 1); do
+	new_id="sub_$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 5)"
+	uci -q rename passwall2.${sid}="${new_id}"
+	unset sid new_id
+done
 
 uci -q commit passwall2
 
