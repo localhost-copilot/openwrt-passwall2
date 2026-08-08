@@ -439,7 +439,7 @@ end
 function clear_all_nodes()
 	uci:set(appname, '@global[0]', "enabled", "0")
 	uci:set(appname, '@global[0]', "socks_enabled", "0")
-	uci:set(appname, '@haproxy_config[0]', "balancing_enable", "0")
+	uci:set(appname, '@global_haproxy[0]', "balancing_enable", "0")
 	uci:delete(appname, '@global[0]', "node")
 	uci:foreach(appname, "socks", function(t)
 		uci:delete(appname, t[".name"])
