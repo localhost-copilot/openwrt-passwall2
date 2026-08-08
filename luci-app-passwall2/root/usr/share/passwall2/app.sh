@@ -1010,22 +1010,26 @@ run_ipset_dnsmasq() {
 
 acl_app() {
 	local items=$(uci show ${CONFIG} | grep "=acl_rule" | cut -d '.' -sf 2 | cut -d '=' -sf 1)
-	[ -n "$items" ] && {
+	if [ -z "$items" ]; then
+		ENABLED_ACLS=0
+		return
+	else
+		local has_enabled
 		local index=0
-		local item
+		local sid
 		local redir_port dns_port dnsmasq_port socks_port
 		local ipt_tmp msg msg2
 		redir_port=11200
 		socks_port=11600
 		dns_port=11300
 		dnsmasq_port=${GLOBAL_DNSMASQ_PORT:-11400}
-		for item in $items; do
+		for sid in $items; do
 			index=$(expr $index + 1)
 			local enabled sid remarks sources interface tcp_no_redir_ports udp_no_redir_ports node direct_dns_query_strategy remote_dns_protocol remote_dns remote_dns_doh remote_dns_client_ip remote_dns_detour remote_fakedns remote_dns_query_strategy log loglevel log_file
 			local _ip _mac _iprange _ipset _ip_or_mac source_list config_file
-			local sid=$(uci -q show "${CONFIG}.${item}" | grep "=acl_rule" | awk -F '=' '{print $1}' | awk -F '.' '{print $2}')
 			[ "$(config_n_get $sid enabled)" = "1" ] || continue
-			eval $(uci -q show "${CONFIG}.${item}" | cut -d'.' -sf 3-)
+			has_enabled=1
+			eval $(uci -q show "${CONFIG}.${sid}" | cut -d'.' -sf 3-)
 			log=${log:-0}
 			loglevel=${loglevel:-warn}
 			log_file="/dev/null"
@@ -1150,7 +1154,8 @@ acl_app() {
 			unset _ip _mac _iprange _ipset _ip_or_mac source_list config_file
 		done
 		unset redir_port dns_port dnsmasq_port
-	}
+		[ -n "${has_enabled}" ] || ENABLED_ACLS=0
+	fi
 }
 
 start() {
@@ -1298,9 +1303,6 @@ get_config() {
 		[ -n "$NODE" ] && [ "$(config_get_type $NODE)" == "nodes" ] && ENABLED_DEFAULT_ACL=1
 	}
 	ENABLED_ACLS=$(config_t_get global acl_enable 0)
-	[ "$ENABLED_ACLS" == 1 ] && {
-		[ "$(uci show ${CONFIG} | grep "@acl_rule" | grep "enabled='1'" | wc -l)" == 0 ] && ENABLED_ACLS=0
-	}
 	SOCKS_ENABLED=$(config_t_get global socks_enabled 0)
 	REDIR_PORT=$(echo $(get_new_port 1041 tcp,udp))
 	TCP_PROXY_WAY=$(config_t_get global_forwarding tcp_proxy_way redirect)
