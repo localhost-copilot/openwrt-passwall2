@@ -1489,6 +1489,9 @@ msgstr "سمت سرور"
 msgid "Server Config"
 msgstr "پیکربندی سرور"
 
+msgid "Servers Manager"
+msgstr "مدیر سرورها"
+
 msgid "Users Manager"
 msgstr "مدیریت کاربران"
 

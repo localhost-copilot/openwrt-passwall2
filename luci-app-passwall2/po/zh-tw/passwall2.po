@@ -1481,6 +1481,9 @@ msgstr "服務器端"
 msgid "Server Config"
 msgstr "服務器配置"
 
+msgid "Servers Manager"
+msgstr "服務器管理"
+
 msgid "Users Manager"
 msgstr "用戶管理"
 

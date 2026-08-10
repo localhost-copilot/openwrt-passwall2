@@ -1490,6 +1490,9 @@ msgstr "Серверная часть"
 msgid "Server Config"
 msgstr "Конфигурация сервера"
 
+msgid "Servers Manager"
+msgstr "Диспетчер серверов"
+
 msgid "Users Manager"
 msgstr "Управление пользователями"
 
