@@ -1495,6 +1495,9 @@ msgstr "مدیر سرورها"
 msgid "Users Manager"
 msgstr "مدیریت کاربران"
 
+msgid "User Config"
+msgstr "پیکربندی کاربر"
+
 msgid "Logs"
 msgstr "گزارش‌ها (Logs)"
 
@@ -1922,8 +1925,14 @@ msgstr "استفاده از پیکربندی سفارشی"
 msgid "Custom Config"
 msgstr "پیکربندی سفارشی"
 
+msgid "Must be Base64 text!"
+msgstr "متن باید Base64 باشد!"
+
 msgid "Must be JSON text!"
 msgstr "باید متن JSON باشد!"
+
+msgid "Must be UUID format!"
+msgstr "باید فرمت UUID باشه!"
 
 msgid "Geo View"
 msgstr "نمای Geo"
