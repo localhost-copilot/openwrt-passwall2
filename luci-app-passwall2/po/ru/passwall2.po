@@ -971,6 +971,9 @@ msgstr "Группа правил шунтирования"
 msgid "Please note attention to the priority, the higher the order, the higher the priority."
 msgstr "Обратите внимание: правила выше в списке имеют более высокий приоритет."
 
+msgid "This ID already exists."
+msgstr "Этот идентификатор уже существует."
+
 msgid "Update..."
 msgstr "Обновление..."
 
