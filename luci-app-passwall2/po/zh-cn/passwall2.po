@@ -2408,3 +2408,6 @@ msgstr "密码套件"
 
 msgid "Configures the list of supported cipher suites."
 msgstr "配置支持的密码套件列表。"
+
+msgid "This username already exists."
+msgstr "该用户名已存在。"

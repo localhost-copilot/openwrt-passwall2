@@ -2422,3 +2422,6 @@ msgstr "سوئیت‌های رمزدار"
 
 msgid "Configures the list of supported cipher suites."
 msgstr "فهرست مجموعه‌های رمز پشتیبانی‌شده را پیکربندی می‌کند."
+
+msgid "This username already exists."
+msgstr "این نام کاربری از قبل وجود دارد."

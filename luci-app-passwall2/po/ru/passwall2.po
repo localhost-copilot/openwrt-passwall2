@@ -2420,3 +2420,6 @@ msgstr "Наборы шифров"
 
 msgid "Configures the list of supported cipher suites."
 msgstr "Задает список поддерживаемых наборов шифров."
+
+msgid "This username already exists."
+msgstr "Это имя пользователя уже существует."
