@@ -1,3 +1,6 @@
+-- Copyright (C) 2022-2025 xiaorouji
+-- Copyright (C) 2026 Openwrt-Passwall Organization
+
 module("luci.passwall2.api", package.seeall)
 appname = "passwall2"
 c_config = "passwall2"
@@ -17,10 +20,11 @@ command_timeout = 300
 OPENWRT_ARCH = nil
 DISTRIB_ARCH = nil
 
-LOCK_PREFIX = "/tmp/lock/passwall2"
-LOG_FILE = "/tmp/log/passwall2.log"
-TMP_PATH = "/tmp/etc/passwall2"
+LOCK_PREFIX = "/tmp/lock/" .. c_config
+LOG_FILE = "/tmp/log/" .. c_config .. ".log"
+TMP_PATH = "/tmp/etc/" .. c_config
 CACHE_PATH = TMP_PATH .. "_tmp"
+S_TMP_PATH = "/tmp/etc/" .. s_config
 TMP_IFACE_PATH = TMP_PATH .. "/iface"
 
 local lang = uci:get("luci", "main", "lang") or "auto"
@@ -814,16 +818,16 @@ function clone(org)
 end
 
 local function get_bin_version_cache(file, cmd)
-	sys.call("mkdir -p /tmp/etc/passwall2_tmp")
+	sys.call("mkdir -p " .. CACHE_PATH)
 	if fs.access(file) then
 		chmod_755(file)
 		local md5 = sys.exec("echo -n $(md5sum " .. file .. " | awk '{print $1}')")
-		if fs.access("/tmp/etc/passwall2_tmp/" .. md5) then
-			return sys.exec("echo -n $(cat /tmp/etc/passwall2_tmp/%s)" % md5)
+		if fs.access(CACHE_PATH .. "/" .. md5) then
+			return sys.exec("echo -n $(cat %s)" % { CACHE_PATH .. "/" .. md5 })
 		else
 			local version = sys.exec(string.format("echo -n $(%s %s)", file, cmd))
 			if version and version ~= "" then
-				sys.call("echo '" .. version .. "' > " .. "/tmp/etc/passwall2_tmp/" .. md5)
+				sys.call("echo '%s' > %s"  % { version, CACHE_PATH .. "/" .. md5})
 				return version
 			end
 		end
@@ -1415,11 +1419,23 @@ function set_default_cbi()
 	if true then
 		--Map
 		local Map = cbi.Map
-		local original_init = Map.__init__
+		local default_init = Map.__init__
 		function Map.__init__(self, config, ...)
 			if not config then config = c_config end
-			original_init(self, config, ...)
+			default_init(self, config, ...)
 			self.api = require "luci.passwall2.api"
+		end
+		if is_js_luci() == true then
+			local default_parse = Map.parse
+			function Map.parse(self, ...)
+				apply_redirect(self)
+				local old = self.on_after_save
+				self.on_after_save = function(self)
+					if old then old(self) end
+					self:set("@global[0]", "timestamp", os.time())
+				end
+				return default_parse(self, ...)
+			end
 		end
 		function Map.foreach(self, stype, func)
 			self.uci:foreach(self.config, stype, func)
@@ -1459,25 +1475,6 @@ function set_default_cbi()
 				sh_uci_set(c_config, "@global[0]", "auto_lang", lang, true)
 			end
 		end
-		if is_js_luci() == true then
-			local hide_popup_box = nil
-			if hide_popup_box == true then
-				Map.apply_on_parse = false
-				Map.on_after_apply = function(self)
-					if self.redirect then
-						os.execute("sleep 1")
-						luci.http.redirect(self.redirect)
-					end
-				end
-			else
-				apply_redirect(Map)
-				local old = Map.on_after_save
-				Map.on_after_save = function(self)
-					if old then old(self) end
-					self:set("@global[0]", "timestamp", os.time())
-				end
-			end
-		end
 	end
 	if true then
 		--AbstractSection
@@ -1498,9 +1495,9 @@ function set_default_cbi()
 	if true then
 		--TextValue
 		local TextValue = cbi.TextValue
-		local original_init = TextValue.__init__
+		local default_init = TextValue.__init__
 		function TextValue.__init__(self, ...)
-			original_init(self, ...)
+			default_init(self, ...)
 			self.template  = appname .. "/cbi/tvalue"
 		end
 	end
@@ -1627,7 +1624,9 @@ function luci_types(id, m, s, type_name, option_prefix)
 			local deps = s.fields[key].deps
 			if #deps > 0 then
 				for index, value in ipairs(deps) do
-					deps[index]["type"] = type_name
+					if not deps[index]['!reverse'] then
+						deps[index]["type"] = type_name
+					end
 				end
 			else
 				s.fields[key]:depends({ type = type_name })

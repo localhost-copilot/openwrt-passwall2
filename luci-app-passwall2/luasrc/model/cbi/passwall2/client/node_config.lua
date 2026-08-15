@@ -2,10 +2,10 @@ api = require "luci.passwall2.api"
 api.set_default_cbi()
 
 m = Map()
-m.redirect = api.url()
+m.redirect = api.url("node_list")
 
 if not arg[1] or not m:get(arg[1]) then
-	luci.http.redirect(api.url("node_list"))
+	luci.http.redirect(m.redirect)
 end
 
 fs = require "nixio.fs"

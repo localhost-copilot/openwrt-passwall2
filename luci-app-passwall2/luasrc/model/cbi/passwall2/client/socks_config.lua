@@ -2,9 +2,10 @@ local api = require "luci.passwall2.api"
 api.set_default_cbi()
 
 m = Map()
+m.redirect = api.url()
 
 if not arg[1] or not m:get(arg[1]) then
-	luci.http.redirect(api.url())
+	luci.http.redirect(m.redirect)
 end
 
 m:appendTemplate("/cbi/nodes_dynamiclist_com")
