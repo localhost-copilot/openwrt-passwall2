@@ -26,6 +26,7 @@ TMP_PATH = "/tmp/etc/" .. c_config
 CACHE_PATH = TMP_PATH .. "_tmp"
 S_TMP_PATH = "/tmp/etc/" .. s_config
 TMP_IFACE_PATH = TMP_PATH .. "/iface"
+TMP_ACL_PATH = TMP_PATH .. "/acl"
 
 local lang = uci:get("luci", "main", "lang") or "auto"
 if lang == "auto" then
@@ -201,9 +202,10 @@ function get_cache_var(key)
 	return val
 end
 
-function get_new_port()
+function get_new_port(p)
+	if not p then p = "auto" end
 	local cmd_format = ". /usr/share/passwall2/utils.sh ; echo -n $(get_new_port %s tcp,udp)"
-	return tonumber(sys.exec(string.format(cmd_format, "auto")))
+	return tonumber(sys.exec(string.format(cmd_format, p)))
 end
 
 function exec_call(cmd)
