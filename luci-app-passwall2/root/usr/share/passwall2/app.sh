@@ -11,7 +11,6 @@ LUA_UTIL_PATH=/usr/lib/lua/luci/passwall2
 UTIL_SINGBOX=$LUA_UTIL_PATH/util_sing-box.lua
 UTIL_SS=$LUA_UTIL_PATH/util_shadowsocks.lua
 UTIL_XRAY=$LUA_UTIL_PATH/util_xray.lua
-UTIL_HYSTERIA2=$LUA_UTIL_PATH/util_hysteria2.lua
 SINGBOX_BIN=$(first_type $(config_n_get @global_app[0] sing_box_file) sing-box)
 XRAY_BIN=$(first_type $(config_n_get @global_app[0] xray_file) xray)
 
@@ -474,19 +473,6 @@ run_socks() {
 		local _json_arg="$(json_dump)"
 		lua $UTIL_SS gen_config "${_json_arg}" > $config_file
 		[ -z "$no_run" ] && ln_run ${QUEUE_RUN} "$(first_type sslocal)" "sslocal" $log_file -c "$config_file" -v
-	;;
-	hysteria2)
-		json_add_string "local_socks_address" "${bind}"
-		json_add_string "local_socks_port" "${socks_port}"
-		[ "$http_port" != "0" ] && {
-			http_flag=1
-			config_file="${config_file%%.*}+http${config_file#${config_file%%.*}}"
-			json_add_string "local_http_address" "${bind}"
-			json_add_string "local_http_port" "${http_port}"
-		}
-		local _json_arg="$(json_dump)"
-		lua $UTIL_HYSTERIA2 gen_config "${_json_arg}" > $config_file
-		[ -z "$no_run" ] && ln_run ${QUEUE_RUN} "$(first_type $(config_n_get @global_app[0] hysteria_file))" "hysteria" $log_file -c "$config_file" client
 	;;
 	esac
 

@@ -49,7 +49,6 @@ config global_rules
 config global_app
 	option geoview_file '/usr/bin/geoview'
 	option xray_file '/usr/bin/xray'
-	option hysteria_file '/usr/bin/hysteria'
 	option sing_box_file '/usr/bin/sing-box'
 
 config global_subscribe
