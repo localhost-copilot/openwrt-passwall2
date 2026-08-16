@@ -132,7 +132,7 @@ Selected during installation based on your needs:
 - Shadowsocks Rust, ShadowsocksR
 - V2Ray/Xray (VMess, VLESS, Trojan)
 - Sing-Box, Hysteria, Hysteria2
-- NaiveProxy, HAProxy
+- HAProxy
 
 ## 🚀 Features
 
@@ -141,7 +141,6 @@ Selected during installation based on your needs:
 - **V2Ray/Xray** with full protocol support (VMess, VLESS, Trojan)
 - **Sing-Box** with modern proxy features
 - **Hysteria** and **Hysteria2** for high-performance UDP transport
-- **NaiveProxy** for advanced obfuscation
 - **ShadowsocksR** legacy support
 
 ### Traffic Management
