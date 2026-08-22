@@ -33,11 +33,6 @@ config_t_get() {
 	echo "${ret:=${3}}"
 }
 
-config_t_set() {
-	local index=${4:-0}
-	local ret=$(uci -q set "${CONFIG}.@${1}[${index}].${2}=${3}" 2>/dev/null)
-}
-
 eval_set_val() {
 	for i in $@; do
 		for j in $i; do
@@ -157,9 +152,9 @@ get_geoip() {
 	local geoip_type_flag=""
 	local output_path="${geo_output_path}/geoip-${geoip_code}-$2"
 	[ ! -s "${output_path}" ] && {
-		local geoip_path="$(config_t_get global_rules v2ray_location_asset)"
+		local geoip_path="$(config_n_get @global_rules[0] v2ray_location_asset)"
 		geoip_path="${geoip_path%*/}/geoip.dat"
-		local bin="$(first_type $(config_t_get global_app geoview_file) geoview)"
+		local bin="$(first_type $(config_n_get @global_app[0] geoview_file) geoview)"
 		[ -n "$bin" ] && [ -s "$geoip_path" ] || { echo ""; return; }
 		case "$2" in
 			"ipv4") geoip_type_flag="-ipv6=false" ;;

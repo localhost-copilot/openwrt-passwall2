@@ -756,8 +756,8 @@ add_firewall_rule() {
 	filter_vps_addr $(config_n_get $NODE address) > /dev/null 2>&1 &
 	filter_vps_addr $(config_n_get $NODE download_address) > /dev/null 2>&1 &
 
-	accept_icmp=$(config_t_get global_forwarding accept_icmp 0)
-	accept_icmpv6=$(config_t_get global_forwarding accept_icmpv6 0)
+	accept_icmp=$(config_n_get @global_forwarding[0] accept_icmp 0)
+	accept_icmpv6=$(config_n_get @global_forwarding[0] accept_icmpv6 0)
 
 	if [ "${TCP_PROXY_WAY}" = "redirect" ]; then
 		unset is_tproxy
@@ -771,7 +771,7 @@ add_firewall_rule() {
 
 	nft "add chain $NFTABLE_NAME PSW2_DNS"
 	nft "flush chain $NFTABLE_NAME PSW2_DNS"
-	if [ $(config_t_get global dns_redirect "1") = "0" ]; then
+	if [ $(config_n_get @global[0] dns_redirect "1") = "0" ]; then
 		#Only hijack when dest address is local IP
 		nft "insert rule $NFTABLE_NAME dstnat ip saddr @${NFTSET_DIRECT} ip daddr @${NFTSET_LOCAL} jump PSW2_DNS"
 		nft "insert rule $NFTABLE_NAME dstnat ip6 saddr @${NFTSET_DIRECT6} ip6 daddr @${NFTSET_LOCAL6} jump PSW2_DNS"
@@ -1093,7 +1093,7 @@ start() {
 stop() {
 	[ -z "$(command -v log_i18n)" ] && . "$UTILS_PATH"
 	del_firewall_rule
-	[ $(config_t_get global flush_set "0") = "1" ] && {
+	[ $(config_n_get @global[0] flush_set "0") = "1" ] && {
 		uci -q delete ${CONFIG}.@global[0].flush_set
 		uci -q commit ${CONFIG}
 		#flush_table

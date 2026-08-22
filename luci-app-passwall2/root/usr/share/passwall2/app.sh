@@ -13,11 +13,11 @@ UTIL_SINGBOX=$LUA_UTIL_PATH/util_sing-box.lua
 UTIL_SS=$LUA_UTIL_PATH/util_shadowsocks.lua
 UTIL_XRAY=$LUA_UTIL_PATH/util_xray.lua
 UTIL_HYSTERIA2=$LUA_UTIL_PATH/util_hysteria2.lua
-SINGBOX_BIN=$(first_type $(config_t_get global_app sing_box_file) sing-box)
-XRAY_BIN=$(first_type $(config_t_get global_app xray_file) xray)
+SINGBOX_BIN=$(first_type $(config_n_get @global_app[0] sing_box_file) sing-box)
+XRAY_BIN=$(first_type $(config_n_get @global_app[0] xray_file) xray)
 
 check_run_environment() {
-	local prefer_nft=$(config_t_get global_forwarding prefer_nft 1)
+	local prefer_nft=$(config_n_get @global_forwarding[0] prefer_nft 1)
 	local dnsmasq_info=$(dnsmasq -v 2>/dev/null)
 	local dnsmasq_ver=$(echo "$dnsmasq_info" | sed -n '1s/.*version \([0-9.]*\).*/\1/p')
 	# local dnsmasq_opts=$(echo "$dnsmasq_info" | grep -i "Compile time options")
@@ -76,7 +76,7 @@ run_xray() {
 	eval_set_val $@
 	node_protocol=$(config_n_get $node protocol)
 	[ -n "$log_file" ] || local log_file="/dev/null"
-	[ -z "$loglevel" ] && local loglevel=$(config_t_get global loglevel "warning")
+	[ -z "$loglevel" ] && local loglevel=$(config_n_get @global[0] loglevel "warning")
 
 	json_init
 	json_add_string "loglevel" "${loglevel}"
@@ -207,7 +207,7 @@ run_singbox() {
 	[ -z "$type" ] && return 1
 	node_protocol=$(config_n_get $node protocol)
 	[ -n "$log_file" ] || local log_file="/dev/null"
-	[ -z "$loglevel" ] && local loglevel=$(config_t_get global loglevel "warn")
+	[ -z "$loglevel" ] && local loglevel=$(config_n_get @global[0] loglevel "warn")
 	local singbox_tag=$($SINGBOX_BIN version | grep 'Tags:' | awk '{print $2}')
 
 	json_init
@@ -411,7 +411,7 @@ run_socks() {
 			json_add_null "server_port"
 		}
 		[ "${log_file}" != "/dev/null" ] && {
-			local loglevel=$(config_t_get global loglevel "warn")
+			local loglevel=$(config_n_get @global[0] loglevel "warn")
 			json_add_string "log" "1"
 			json_add_string "loglevel" "${loglevel}"
 			json_add_string "logfile" "${log_file}"
@@ -439,7 +439,7 @@ run_socks() {
 			json_add_null "server_port"
 		}
 		[ "${log_file}" != "/dev/null" ] && {
-			local loglevel=$(config_t_get global loglevel "warn")
+			local loglevel=$(config_n_get @global[0] loglevel "warn")
 			json_add_string "log" "1"
 			json_add_string "loglevel" "${loglevel}"
 		}
@@ -489,7 +489,7 @@ run_socks() {
 		}
 		local _json_arg="$(json_dump)"
 		lua $UTIL_HYSTERIA2 gen_config "${_json_arg}" > $config_file
-		[ -z "$no_run" ] && ln_run ${QUEUE_RUN} "$(first_type $(config_t_get global_app hysteria_file))" "hysteria" $log_file -c "$config_file" client
+		[ -z "$no_run" ] && ln_run ${QUEUE_RUN} "$(first_type $(config_n_get @global_app[0] hysteria_file))" "hysteria" $log_file -c "$config_file" client
 	;;
 	esac
 
@@ -592,7 +592,7 @@ run_global() {
 			;;
 			doh|\
 			http3)
-				REMOTE_DNS_DOH=$(config_t_get global remote_dns_doh "https://1.1.1.1/dns-query")
+				REMOTE_DNS_DOH=$(config_n_get @global[0] remote_dns_doh "https://1.1.1.1/dns-query")
 				V2RAY_ARGS="${V2RAY_ARGS} remote_dns_doh=${REMOTE_DNS_DOH}"
 				dns_msg="${dns_msg} $(i18n "Remote DNS: %s" "${REMOTE_DNS_DOH}")"
 			;;
@@ -602,25 +602,25 @@ run_global() {
 			dns_msg="${dns_msg} + FakeDNS "
 		}
 		
-		local _remote_dns_client_ip=$(config_t_get global remote_dns_client_ip)
+		local _remote_dns_client_ip=$(config_n_get @global[0] remote_dns_client_ip)
 		[ -n "${_remote_dns_client_ip}" ] && V2RAY_ARGS="${V2RAY_ARGS} remote_dns_client_ip=${_remote_dns_client_ip}"
-		V2RAY_ARGS="${V2RAY_ARGS} remote_rewrite_ttl=$(config_t_get global remote_rewrite_ttl)"
+		V2RAY_ARGS="${V2RAY_ARGS} remote_rewrite_ttl=$(config_n_get @global[0] remote_rewrite_ttl)"
 	}
 	dns_msg="${dns_msg}）"
 
 	V2RAY_CONFIG=${GLOBAL_ACL_PATH}/global.json
 	V2RAY_LOG=${GLOBAL_ACL_PATH}/global.log
-	[ "$(config_t_get global log_node 1)" != "1" ] && V2RAY_LOG="/dev/null"
+	[ "$(config_n_get @global[0] log_node 1)" != "1" ] && V2RAY_LOG="/dev/null"
 	V2RAY_ARGS="${V2RAY_ARGS} log_file=${V2RAY_LOG} config_file=${V2RAY_CONFIG}"
 
-	node_socks_port=$(config_t_get global node_socks_port 1070)
-	node_socks_bind_local=$(config_t_get global node_socks_bind_local 1)
+	node_socks_port=$(config_n_get @global[0] node_socks_port 1070)
+	node_socks_bind_local=$(config_n_get @global[0] node_socks_bind_local 1)
 	node_socks_bind="127.0.0.1"
 	[ "${node_socks_bind_local}" != "1" ] && node_socks_bind="0.0.0.0"
 	V2RAY_ARGS="${V2RAY_ARGS} socks_address=${node_socks_bind} socks_port=${node_socks_port}"
 	set_cache_var "GLOBAL_SOCKS_server" "127.0.0.1:$node_socks_port"
 
-	node_http_port=$(config_t_get global node_http_port 0)
+	node_http_port=$(config_n_get @global[0] node_http_port 0)
 	[ "$node_http_port" != "0" ] && V2RAY_ARGS="${V2RAY_ARGS} http_port=${node_http_port}"
 
 	local run_func
@@ -746,7 +746,7 @@ clean_crontab() {
 
 start_crontab() {
 	if [ "$ENABLED_DEFAULT_ACL" == 1 ] || [ "$ENABLED_ACLS" == 1 ]; then
-		start_daemon=$(config_t_get global_delay start_daemon 0)
+		start_daemon=$(config_n_get @global_delay[0] start_daemon 0)
 		[ "$start_daemon" = "1" ] && { $APP_PATH/monitor.sh > /dev/null 2>&1 & }
 	fi
 
@@ -763,8 +763,8 @@ start_crontab() {
 		return
 	}
 
-	stop_week_mode=$(config_t_get global_delay stop_week_mode)
-	stop_time_mode=$(config_t_get global_delay stop_time_mode)
+	stop_week_mode=$(config_n_get @global_delay[0] stop_week_mode)
+	stop_time_mode=$(config_n_get @global_delay[0] stop_time_mode)
 	if [ -n "$stop_week_mode" ]; then
 		stop_time_hh=$(echo $stop_time_mode | awk -F ':' '{print $1}')
 		stop_time_mm=$(echo $stop_time_mode | awk -F ':' '{print $2}')
@@ -774,8 +774,8 @@ start_crontab() {
 		log_i18n 0 "Scheduled tasks: Auto stop service."
 	fi
 
-	start_week_mode=$(config_t_get global_delay start_week_mode)
-	start_time_mode=$(config_t_get global_delay start_time_mode)
+	start_week_mode=$(config_n_get @global_delay[0] start_week_mode)
+	start_time_mode=$(config_n_get @global_delay[0] start_time_mode)
 	if [ -n "$start_week_mode" ]; then
 		start_time_hh=$(echo $start_time_mode | awk -F ':' '{print $1}')
 		start_time_mm=$(echo $start_time_mode | awk -F ':' '{print $2}')
@@ -785,8 +785,8 @@ start_crontab() {
 		log_i18n 0 "Scheduled tasks: Auto start service."
 	fi
 
-	restart_week_mode=$(config_t_get global_delay restart_week_mode)
-	restart_time_mode=$(config_t_get global_delay restart_time_mode)
+	restart_week_mode=$(config_n_get @global_delay[0] restart_week_mode)
+	restart_time_mode=$(config_n_get @global_delay[0] restart_time_mode)
 	if [ -n "$restart_week_mode" ]; then
 		restart_time_hh=$(echo $restart_time_mode | awk -F ':' '{print $1}')
 		restart_time_mm=$(echo $restart_time_mode | awk -F ':' '{print $2}')
@@ -800,8 +800,8 @@ start_crontab() {
 		log_i18n 0 "Scheduled tasks: Auto restart service."
 	fi
 
-	rules_update_week_mode=$(config_t_get global_rules update_week_mode)
-	rules_update_time_mode=$(config_t_get global_rules update_time_mode)
+	rules_update_week_mode=$(config_n_get @global_rules[0] update_week_mode)
+	rules_update_time_mode=$(config_n_get @global_rules[0] update_time_mode)
 	if [ -n "$rules_update_week_mode" ]; then
 		rules_update_time_hh=$(echo $rules_update_time_mode | awk -F ':' '{print $1}')
 		rules_update_time_mm=$(echo $rules_update_time_mode | awk -F ':' '{print $2}')
@@ -865,7 +865,7 @@ stop_crontab() {
 }
 
 start_haproxy() {
-	[ "$(config_t_get global_haproxy balancing_enable 0)" != "1" ] && return
+	[ "$(config_n_get @global_haproxy[0] balancing_enable 0)" != "1" ] && return
 	haproxy_path=$TMP_PATH/haproxy
 	haproxy_conf="config.cfg"
 	lua $APP_PATH/haproxy.lua -path ${haproxy_path} -conf ${haproxy_conf}
@@ -1118,7 +1118,7 @@ start() {
 	}
 	mkdir -p /tmp/etc /tmp/log $TMP_PATH $TMP_BIN_PATH $TMP_SCRIPT_FUNC_PATH $TMP_ROUTE_PATH $TMP_ACL_PATH $TMP_PATH2
 	get_config
-	export V2RAY_LOCATION_ASSET=$(config_t_get global_rules v2ray_location_asset "/usr/share/v2ray/")
+	export V2RAY_LOCATION_ASSET=$(config_n_get @global_rules[0] v2ray_location_asset "/usr/share/v2ray/")
 	export XRAY_LOCATION_ASSET=$V2RAY_LOCATION_ASSET
 	export ENABLE_DEPRECATED_GEOSITE=true
 	export ENABLE_DEPRECATED_GEOIP=true
@@ -1200,7 +1200,7 @@ stop() {
 	rm -rf $GLOBAL_DNSMASQ_CONF_PATH
 	[ "1" = "1" ] && {
 		#restore logic
-		bak_dnsmasq_dns_redirect=$(config_t_get global dnsmasq_dns_redirect)
+		bak_dnsmasq_dns_redirect=$(config_n_get @global[0] dnsmasq_dns_redirect)
 		[ -n "${bak_dnsmasq_dns_redirect}" ] && {
 			uci -q set dhcp.@dnsmasq[0].dns_redirect="${bak_dnsmasq_dns_redirect}"
 			uci -q commit dhcp
@@ -1247,32 +1247,32 @@ get_direct_dns() {
 
 get_config() {
 	ENABLED_DEFAULT_ACL=0
-	ENABLED=$(config_t_get global enabled 0)
-	NODE=$(config_t_get global node)
+	ENABLED=$(config_n_get @global[0] enabled 0)
+	NODE=$(config_n_get @global[0] node)
 	[ "$ENABLED" == 1 ] && {
 		[ -n "$NODE" ] && [ "$(config_get_type $NODE)" == "nodes" ] && ENABLED_DEFAULT_ACL=1
 	}
-	ENABLED_ACLS=$(config_t_get global acl_enable 0)
-	SOCKS_ENABLED=$(config_t_get global socks_enabled 0)
+	ENABLED_ACLS=$(config_n_get @global[0] acl_enable 0)
+	SOCKS_ENABLED=$(config_n_get @global[0] socks_enabled 0)
 	REDIR_PORT=$(echo $(get_new_port 1041 tcp,udp))
-	TCP_PROXY_WAY=$(config_t_get global_forwarding tcp_proxy_way redirect)
-	TCP_NO_REDIR_PORTS=$(config_t_get global_forwarding tcp_no_redir_ports 'disable')
-	UDP_NO_REDIR_PORTS=$(config_t_get global_forwarding udp_no_redir_ports 'disable')
-	TCP_REDIR_PORTS=$(config_t_get global_forwarding tcp_redir_ports '22,25,53,143,465,587,853,993,995,80,443')
-	UDP_REDIR_PORTS=$(config_t_get global_forwarding udp_redir_ports '1:65535')
-	PROXY_IPV6=$(config_t_get global_forwarding ipv6_tproxy 0)
+	TCP_PROXY_WAY=$(config_n_get @global_forwarding[0] tcp_proxy_way redirect)
+	TCP_NO_REDIR_PORTS=$(config_n_get @global_forwarding[0] tcp_no_redir_ports 'disable')
+	UDP_NO_REDIR_PORTS=$(config_n_get @global_forwarding[0] udp_no_redir_ports 'disable')
+	TCP_REDIR_PORTS=$(config_n_get @global_forwarding[0] tcp_redir_ports '22,25,53,143,465,587,853,993,995,80,443')
+	UDP_REDIR_PORTS=$(config_n_get @global_forwarding[0] udp_redir_ports '1:65535')
+	PROXY_IPV6=$(config_n_get @global_forwarding[0] ipv6_tproxy 0)
 	TCP_PROXY_MODE="global"
 	UDP_PROXY_MODE="global"
-	LOCALHOST_PROXY=$(config_t_get global localhost_proxy '1')
-	CLIENT_PROXY=$(config_t_get global client_proxy '1')
-	DIRECT_DNS_QUERY_STRATEGY=$(config_t_get global direct_dns_query_strategy UseIP)
-	REMOTE_DNS_PROTOCOL=$(config_t_get global remote_dns_protocol tcp)
-	REMOTE_DNS_DETOUR=$(config_t_get global remote_dns_detour remote)
-	REMOTE_DNS=$(config_t_get global remote_dns 1.1.1.1:53 | sed 's/#/:/g' | sed -E 's/\:([^:]+)$/#\1/g')
-	REMOTE_FAKEDNS=$(config_t_get global remote_fakedns '0')
-	REMOTE_DNS_QUERY_STRATEGY=$(config_t_get global remote_dns_query_strategy UseIPv4)
-	DNS_CACHE=$(config_t_get global dns_cache 1)
-	DNS_REDIRECT=$(config_t_get global dns_redirect 1)
+	LOCALHOST_PROXY=$(config_n_get @global[0] localhost_proxy '1')
+	CLIENT_PROXY=$(config_n_get @global[0] client_proxy '1')
+	DIRECT_DNS_QUERY_STRATEGY=$(config_n_get @global[0] direct_dns_query_strategy UseIP)
+	REMOTE_DNS_PROTOCOL=$(config_n_get @global[0] remote_dns_protocol tcp)
+	REMOTE_DNS_DETOUR=$(config_n_get @global[0] remote_dns_detour remote)
+	REMOTE_DNS=$(config_n_get @global[0] remote_dns 1.1.1.1:53 | sed 's/#/:/g' | sed -E 's/\:([^:]+)$/#\1/g')
+	REMOTE_FAKEDNS=$(config_n_get @global[0] remote_fakedns '0')
+	REMOTE_DNS_QUERY_STRATEGY=$(config_n_get @global[0] remote_dns_query_strategy UseIPv4)
+	DNS_CACHE=$(config_n_get @global[0] dns_cache 1)
+	DNS_REDIRECT=$(config_n_get @global[0] dns_redirect 1)
 
 	get_direct_dns
 
