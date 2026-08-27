@@ -1122,6 +1122,8 @@ function gen_config(var)
 	local dns_listen_port = var["dns_listen_port"]
 	local direct_dns_udp_server = var["direct_dns_udp_server"]
 	local direct_dns_udp_port = var["direct_dns_udp_port"]
+	local direct_dns_tcp_server = var["direct_dns_tcp_server"]
+	local direct_dns_tcp_port = var["direct_dns_tcp_port"]
 	local direct_dns_query_strategy = var["direct_dns_query_strategy"]
 	local direct_ipset = var["direct_ipset"]
 	local direct_nftset = var["direct_nftset"]
@@ -1834,10 +1836,18 @@ function gen_config(var)
 			server_port = tonumber(direct_dns_udp_port) or 53,
 			detour = "direct",
 		})
+	elseif direct_dns_tcp_server then
+		table.insert(dns.servers, {
+			tag = "direct",
+			type = "tcp",
+			server = direct_dns_tcp_server,
+			server_port = tonumber(direct_dns_tcp_port) or 53,
+			detour = "direct",
+		})
 	end
 
 	for i, v in pairs(GLOBAL.DNS_SERVER) do
-		if direct_dns_udp_server then
+		if direct_dns_udp_server or direct_dns_tcp_server then
 			v.server.domain_resolver = "direct"
 		end
 		table.insert(dns.servers, v.server)
@@ -1902,7 +1912,7 @@ function gen_config(var)
 			end
 		end
 
-		if direct_dns_udp_server then
+		if direct_dns_udp_server or direct_dns_tcp_server then
 			local nodes_domain = {}
 			local nodes_domain_text = sys.exec('uci show passwall2 | grep ".address=" | cut -d "\'" -f 2 | grep "[a-zA-Z]$" | sort -u')
 			string.gsub(nodes_domain_text, '[^' .. "\r\n" .. ']+', function(w)
