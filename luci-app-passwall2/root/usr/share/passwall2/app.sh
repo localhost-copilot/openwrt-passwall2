@@ -791,13 +791,28 @@ run_ipset_dnsmasq() {
 }
 
 acl_node() {
+	[ ! -f ${TMP_ACL_PATH}/acl_node_default ] && ENABLED_DEFAULT_ACL=0
+	local acl_node_num=$(jsonfilter -s "${acl_json}" -e '$.node_order[*]' | wc -l)
+	[ "${acl_node_num}" == 0 ] && {
+		ENABLED_DEFAULT_ACL=0
+		ENABLED_ACLS=0
+		return
+	}
+	[ "$(uci -q get dhcp.@dnsmasq[0].dns_redirect)" == "1" ] && {
+		uci -q set ${CONFIG}.@global[0].dnsmasq_dns_redirect='1'
+		uci -q commit ${CONFIG}
+		uci -q set dhcp.@dnsmasq[0].dns_redirect='0'
+		uci -q commit dhcp
+
+		json_init
+		json_add_string "LOG" "0"
+		lua $APP_PATH/helper_dnsmasq.lua restart "$(json_dump)"
+	}
 	local run_func
 	[ -n "${XRAY_BIN}" ] && run_func="run_xray"
 	[ -n "${SINGBOX_BIN}" ] && run_func="run_singbox"
-	local acl_node_num=0
 	for nid in $(jsonfilter -s "${acl_json}" -e '$.node_order[*]'); do
 		[ ! -f ${TMP_ACL_PATH}/acl_node_${nid} ] && continue
-		acl_node_num=$(expr $acl_node_num + 1)
 		local _var=$(cat ${TMP_ACL_PATH}/acl_node_${nid} 2>/dev/null)
 		eval local ${_var}
 		local type=$(echo $(config_n_get $node type) | tr 'A-Z' 'a-z')
@@ -857,8 +872,6 @@ acl_node() {
 		fi
 		rm -f ${TMP_ACL_PATH}/acl_node_${nid}
 	done
-	[ ! -f ${TMP_ACL_PATH}/acl_node_default ] && ENABLED_DEFAULT_ACL=0
-	[ "${acl_node_num}" == 0 ] && ENABLED_ACLS=0 && ENABLED_DEFAULT_ACL=0
 }
 
 start() {
@@ -880,16 +893,6 @@ start() {
 	nftflag=0
 	USE_TABLES=""
 	check_run_environment
-	[ "$(uci -q get dhcp.@dnsmasq[0].dns_redirect)" == "1" ] && {
-		uci -q set ${CONFIG}.@global[0].dnsmasq_dns_redirect='1'
-		uci -q commit ${CONFIG}
-		uci -q set dhcp.@dnsmasq[0].dns_redirect='0'
-		uci -q commit dhcp
-
-		json_init
-		json_add_string "LOG" "0"
-		lua $APP_PATH/helper_dnsmasq.lua restart "$(json_dump)"
-	}
 	[ -n "$USE_TABLES" ] && source $APP_PATH/${USE_TABLES}.sh start
 	set_cache_var "USE_TABLES" "$USE_TABLES"
 	if [ "$ENABLED_DEFAULT_ACL" == 1 ] || [ "$ENABLED_ACLS" == 1 ]; then
