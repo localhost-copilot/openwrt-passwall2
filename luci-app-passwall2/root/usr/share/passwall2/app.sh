@@ -69,7 +69,7 @@ check_run_environment() {
 
 run_xray() {
 	local flag node redir_port socks_address socks_port socks_username socks_password http_address http_port http_username http_password
-	local dns_listen_port direct_dns_query_strategy remote_dns_protocol remote_dns_udp_server remote_dns_tcp_server remote_dns_doh remote_dns_client_ip remote_dns_detour remote_fakedns remote_dns_query_strategy dns_cache
+	local dns_listen_port direct_dns_query_strategy remote_dns_protocol remote_dns_udp_server remote_dns_udp_port remote_dns_tcp_server remote_dns_tcp_port remote_dns_doh remote_dns_client_ip remote_dns_detour remote_fakedns remote_dns_query_strategy dns_cache
 	local loglevel log_file config_file
 	eval_set_val $@
 	node_protocol=$(config_n_get $node protocol)
@@ -135,18 +135,12 @@ run_xray() {
 		}
 		case "$remote_dns_protocol" in
 			udp)
-				local _dns=$(get_first_dns remote_dns_udp_server 53 | sed 's/#/:/g')
-				local _dns_address=$(echo ${_dns} | awk -F ':' '{print $1}')
-				local _dns_port=$(echo ${_dns} | awk -F ':' '{print $2}')
-				json_add_string "remote_dns_udp_port" "${_dns_port}"
-				json_add_string "remote_dns_udp_server" "${_dns_address}"
+				json_add_string "remote_dns_udp_server" "${remote_dns_udp_server}"
+				json_add_string "remote_dns_udp_port" "${remote_dns_udp_port}"
 			;;
 			tcp)
-				local _dns=$(get_first_dns remote_dns_tcp_server 53 | sed 's/#/:/g')
-				local _dns_address=$(echo ${_dns} | awk -F ':' '{print $1}')
-				local _dns_port=$(echo ${_dns} | awk -F ':' '{print $2}')
-				json_add_string "remote_dns_tcp_port" "${_dns_port}"
-				json_add_string "remote_dns_tcp_server" "${_dns_address}"
+				json_add_string "remote_dns_tcp_server" "${remote_dns_tcp_server}"
+				json_add_string "remote_dns_tcp_port" "${remote_dns_tcp_port}"
 			;;
 			doh)
 				local _doh_url=$(echo $remote_dns_doh | awk -F ',' '{print $1}')
@@ -197,7 +191,7 @@ run_xray() {
 
 run_singbox() {
 	local flag node redir_port socks_address socks_port socks_username socks_password http_address http_port http_username http_password
-	local dns_listen_port direct_dns_query_strategy remote_dns_protocol remote_dns_udp_server remote_dns_tcp_server remote_dns_doh remote_dns_client_ip remote_dns_detour remote_fakedns remote_dns_query_strategy remote_rewrite_ttl dns_cache
+	local dns_listen_port direct_dns_query_strategy remote_dns_protocol remote_dns_udp_server remote_dns_udp_port remote_dns_tcp_server remote_dns_tcp_port remote_dns_doh remote_dns_client_ip remote_dns_detour remote_fakedns remote_dns_query_strategy remote_rewrite_ttl dns_cache
 	local loglevel log_file config_file
 	eval_set_val $@
 	local type=$(echo $(config_n_get $node type) | tr 'A-Z' 'a-z')
@@ -270,20 +264,14 @@ run_singbox() {
 		case "$remote_dns_protocol" in
 			udp|\
 			quic)
-				local _dns=$(get_first_dns remote_dns_udp_server 53 | sed 's/#/:/g')
-				local _dns_address=$(echo ${_dns} | awk -F ':' '{print $1}')
-				local _dns_port=$(echo ${_dns} | awk -F ':' '{print $2}')
-				json_add_string "remote_dns_udp_port" "${_dns_port}"
-				json_add_string "remote_dns_udp_server" "${_dns_address}"
+				json_add_string "remote_dns_udp_server" "${remote_dns_udp_server}"
+				json_add_string "remote_dns_udp_port" "${remote_dns_udp_port}"
 				[ "$remote_dns_protocol" == "quic" ] && json_add_string "remote_dns_quic" "1"
 			;;
 			tcp|\
 			tls)
-				local _dns=$(get_first_dns remote_dns_tcp_server 53 | sed 's/#/:/g')
-				local _dns_address=$(echo ${_dns} | awk -F ':' '{print $1}')
-				local _dns_port=$(echo ${_dns} | awk -F ':' '{print $2}')
-				json_add_string "remote_dns_tcp_port" "${_dns_port}"
-				json_add_string "remote_dns_tcp_server" "${_dns_address}"
+				json_add_string "remote_dns_tcp_server" "${remote_dns_tcp_server}"
+				json_add_string "remote_dns_tcp_port" "${remote_dns_tcp_port}"
 				[ "$remote_dns_protocol" == "tls" ] && json_add_string "remote_dns_tls" "1"
 			;;
 			doh|\
