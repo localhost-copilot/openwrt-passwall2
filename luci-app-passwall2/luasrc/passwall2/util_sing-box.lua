@@ -823,6 +823,10 @@ function gen_config_server(node)
 					u.allowed_ips = user.allowed_ips or {}
 					u.persistent_keepalive_interval = 0
 				end
+				if node.protocol == "snell" then
+					u.name = user.username
+					u.userkey = user.password
+				end
 				users[#users + 1] = u
 			end
 		end
@@ -1001,6 +1005,16 @@ function gen_config_server(node)
 		if users then
 			inbound.peers = users
 		end
+	end
+
+	if node.protocol == "snell" then
+		protocol_table = {
+			users = users,
+			version = tonumber(node.snell_version),
+			psk = node.snell_psk,
+			obfs_mode = node.snell_version == "5" and node.snell_obfs_mode or nil,
+			mode = node.snell_version == "6" and node.snell_mode or nil,
+		}
 	end
 
 	if node.protocol == "direct" then
