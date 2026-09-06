@@ -808,7 +808,7 @@ add_firewall_rule() {
 	nft "flush chain $NFTABLE_NAME PSW2_OUTPUT_MANGLE"
 	nft "add rule $NFTABLE_NAME PSW2_OUTPUT_MANGLE ip daddr @$NFTSET_VPS counter return"
 	nft "add rule $NFTABLE_NAME PSW2_OUTPUT_MANGLE ct direction reply counter return"
-	nft "add rule $NFTABLE_NAME PSW2_OUTPUT_MANGLE meta mark 255 counter return"
+	nft "add rule $NFTABLE_NAME PSW2_OUTPUT_MANGLE meta mark and 0xff == 0xff counter return"
 
 	# jump chains
 	# Only TCP, UDP Invalid.
@@ -826,7 +826,7 @@ add_firewall_rule() {
 		nft "add chain $NFTABLE_NAME PSW2_OUTPUT_NAT"
 		nft "flush chain $NFTABLE_NAME PSW2_OUTPUT_NAT"
 		nft "add rule $NFTABLE_NAME PSW2_OUTPUT_NAT ip daddr @$NFTSET_VPS counter return"
-		nft "add rule $NFTABLE_NAME PSW2_OUTPUT_NAT meta mark 255 counter return"
+		nft "add rule $NFTABLE_NAME PSW2_OUTPUT_NAT meta mark and 0xff == 0xff counter return"
 	}
 
 	#icmp ipv6-icmp redirect
@@ -862,7 +862,7 @@ add_firewall_rule() {
 	nft "flush chain $NFTABLE_NAME PSW2_OUTPUT_MANGLE_V6"
 	nft "add rule $NFTABLE_NAME PSW2_OUTPUT_MANGLE_V6 ip6 daddr @$NFTSET_VPS6 counter return"
 	nft "add rule $NFTABLE_NAME PSW2_OUTPUT_MANGLE_V6 ct direction reply counter return"
-	nft "add rule $NFTABLE_NAME PSW2_OUTPUT_MANGLE_V6 meta mark 255 counter return"
+	nft "add rule $NFTABLE_NAME PSW2_OUTPUT_MANGLE_V6 meta mark and 0xff == 0xff counter return"
 
 	[ -n "$RETURN_DNS" ] && {
 		for _dns in $(echo $RETURN_DNS | tr ',' ' '); do

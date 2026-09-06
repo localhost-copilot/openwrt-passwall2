@@ -736,7 +736,7 @@ add_firewall_rule() {
 
 	$ipt_n -N PSW2_OUTPUT
 	$ipt_n -A PSW2_OUTPUT $(dst $IPSET_VPS) -j RETURN
-	$ipt_n -A PSW2_OUTPUT -m mark --mark 255 -j RETURN
+	$ipt_n -A PSW2_OUTPUT -m mark --mark 0xff/0xff -j RETURN
 
 	$ipt_n -N PSW2_DNS
 	if [ $(config_n_get @global[0] dns_redirect "1") = "0" ]; then
@@ -766,7 +766,7 @@ add_firewall_rule() {
 	$ipt_m -N PSW2_OUTPUT
 	$ipt_m -A PSW2_OUTPUT $(dst $IPSET_VPS) -j RETURN
 	$ipt_m -A PSW2_OUTPUT -m conntrack --ctdir REPLY -j RETURN
-	$ipt_m -A PSW2_OUTPUT -m mark --mark 255 -j RETURN
+	$ipt_m -A PSW2_OUTPUT -m mark --mark 0xff/0xff -j RETURN
 
 	ip rule add fwmark ${FWMARK} table 999 priority 999
 	ip route add local 0.0.0.0/0 dev lo table 999
@@ -778,7 +778,7 @@ add_firewall_rule() {
 
 		$ip6t_n -N PSW2_OUTPUT
 		$ip6t_n -A PSW2_OUTPUT $(dst $IPSET_VPS6) -j RETURN
-		$ip6t_n -A PSW2_OUTPUT -m mark --mark 255 -j RETURN
+		$ip6t_n -A PSW2_OUTPUT -m mark --mark 0xff/0xff -j RETURN
 	}
 	
 	$ip6t_n -N PSW2_DNS
@@ -807,7 +807,7 @@ add_firewall_rule() {
 	insert_rule_before "$ip6t_m" "PREROUTING" "mwan3" "$(dst $IPSET_DIRECT6 !) -j PSW2"
 
 	$ip6t_m -N PSW2_OUTPUT
-	$ip6t_m -A PSW2_OUTPUT -m mark --mark 255 -j RETURN
+	$ip6t_m -A PSW2_OUTPUT -m mark --mark 0xff/0xff -j RETURN
 	$ip6t_m -A PSW2_OUTPUT $(dst $IPSET_VPS6) -j RETURN
 	$ip6t_m -A PSW2_OUTPUT -m conntrack --ctdir REPLY -j RETURN
 
