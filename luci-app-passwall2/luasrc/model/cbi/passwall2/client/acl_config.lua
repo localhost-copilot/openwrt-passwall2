@@ -211,11 +211,17 @@ o.group = {}
 o:depends("_show_node_option", "1")
 o.template = m:template_path("/cbi/nodes_listvalue")
 
-current_node_id = o:formvalue(arg[1])
-if not current_node_id then
-	current_node_id = m:get(arg[1], "node")
+current_node_id = m:get(arg[1], "node")
+local node_value = s.fields["node"]:formvalue(s.section)
+if node_value then
+	current_node_id = node_value
 end
 current_node = current_node_id and m:get(current_node_id) or {}
+
+o = s:taboption("Main", DummyValue, "node_save_before", "")
+o.template = m:template_path("/cbi/hidevalue")
+o.value = current_node[".name"]
+o.cbid = function(self, section) return "node_save_before" end
 
 o = s:taboption("Main", DummyValue, "_node", "")
 o.template = m:template_path("/cbi/hidevalue")
@@ -398,13 +404,13 @@ end
 if current_node.protocol == "_shunt" then
 	local shunt_lua = loadfile("/usr/lib/lua/luci/model/cbi/passwall2/client/include/shunt_options.lua")
 	setfenv(shunt_lua, getfenv(1))(m, s, {
-		s_cfgid = s.section,
-		node_id = current_node_id,
 		node = current_node,
 		verify_option = s.fields["node"],
 		tab = "Shunt",
-		tab_desc = translate("Shunt Rule")
+		tab_desc = translate("Shunt Rule"),
 	})
 end
+
+m:appendTemplate("/include/node_change", { verify_option = s.fields["node"], shunt_list = api.jsonc.stringify(shunt_list) })
 
 return api.return_map(m)
