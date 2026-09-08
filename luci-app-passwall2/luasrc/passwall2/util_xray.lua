@@ -1757,8 +1757,8 @@ function gen_config(var)
 						}
 					} or nil
 				},
-				proxySettings = {
-					tag = "direct"
+				streamSettings = {
+					sockopt = { dialerProxy = "direct" }
 				}
 			}
 			local remote_type_dns = {
@@ -1783,7 +1783,7 @@ function gen_config(var)
 			dns_outbound = {
 				tag = "dns-out",
 				protocol = "dns",
-				proxySettings = type_dns.proxySettings,
+				streamSettings = type_dns.streamSettings,
 				settings = type_dns.settings
 			}
 			table.insert(outbounds, dns_outbound)
