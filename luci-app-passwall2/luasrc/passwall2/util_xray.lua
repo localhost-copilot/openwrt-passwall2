@@ -1459,11 +1459,14 @@ function gen_config(var)
 						if inner_fakedns == "1" and node[e[".name"] .. "_fakedns"] == "1" and #domains > 0 then
 							domain_table.fakedns = true
 						end
-						if outboundTag then
-							table.insert(dns_domain_rules, api.clone(domain_table))
-						end
+						local b_add = true
 						if #domains == 0 then
+							-- No domain
+							b_add = nil
 							domains = nil
+						end
+						if outboundTag and b_add then
+							table.insert(dns_domain_rules, api.clone(domain_table))
 						end
 					end
 					local ip = nil
