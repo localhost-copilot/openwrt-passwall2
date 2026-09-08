@@ -2045,13 +2045,13 @@ function gen_config(var)
 		local direct_outbound = {
 			protocol = "freedom",
 			tag = "direct",
-			settings = {
-				domainStrategy = (direct_dns_query_strategy and direct_dns_query_strategy ~= "") and direct_dns_query_strategy or "UseIP",
+			settings = (api.compare_versions(xray_version, ">", "26.4.25")) and {  -- Todo: Remove version check
 				finalRules = {{ action = "allow" }}
-			},
+			} or nil,
 			streamSettings = {
 				sockopt = {
-					mark = 255
+					mark = 255,
+					domainStrategy = (direct_dns_query_strategy and direct_dns_query_strategy ~= "") and direct_dns_query_strategy or "UseIP"
 				}
 			}
 		}
