@@ -1453,17 +1453,17 @@ msgstr "پورت راه دور"
 msgid "as:"
 msgstr "به عنوان:"
 
-msgid "Public key absolute path"
-msgstr "مسیر مطلق کلید عمومی"
+msgid "Path to the certificate file"
+msgstr "مسیر فایل گواهی‌نامه"
 
-msgid "Private key absolute path"
-msgstr "مسیر مطلق کلید خصوصی"
+msgid "Path to the private key file"
+msgstr "مسیر فایل کلید خصوصی"
 
 msgid "Can't find this file!"
 msgstr "این فایل پیدا نشد!"
 
-msgid "Public key and Private key path can not be empty!"
-msgstr "مسیر کلید عمومی و کلید خصوصی نمی‌تواند خالی باشد!"
+msgid "Certificate and Private key path can not be empty!"
+msgstr "مسیر گواهی و کلید خصوصی نمی‌تواند خالی باشد!"
 
 msgid "Server-Side"
 msgstr "سمت سرور"
