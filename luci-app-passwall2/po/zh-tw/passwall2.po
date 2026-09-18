@@ -1296,7 +1296,7 @@ msgid "Private Key"
 msgstr "私鑰"
 
 msgid "Pre shared key"
-msgstr "额外的對称加密密鑰"
+msgstr "預共享密鑰"
 
 msgid "Allowed IPs"
 msgstr "允許的 IP"
