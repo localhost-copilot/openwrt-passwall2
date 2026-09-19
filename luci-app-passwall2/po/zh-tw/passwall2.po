@@ -1457,6 +1457,15 @@ msgstr "找不到這個文件！"
 msgid "Certificate and Private key path can not be empty!"
 msgstr "憑證和私鑰路徑不能為空！"
 
+msgid "Certificate and Private key PEM can not be empty!"
+msgstr "憑證和私鑰 PEM 檔案不能為空！"
+
+msgid "Use PEM"
+msgstr "使用 PEM"
+
+msgid "Use certificate and private key PEM content."
+msgstr "使用憑證和私鑰 PEM 內容。"
+
 msgid "Server-Side"
 msgstr "服務器端"
 
@@ -1639,6 +1648,12 @@ msgstr "TLS 憑證（PEM）"
 
 msgid "Full certificate (chain), PEM format."
 msgstr "完整憑證（鏈），PEM 格式。"
+
+msgid "TLS Private Key (PEM)"
+msgstr "TLS 私鑰 (PEM)"
+
+msgid "Private key in PEM format."
+msgstr "PEM格式的私鑰。"
 
 msgid "Fetch Manually"
 msgstr "手動獲取"
