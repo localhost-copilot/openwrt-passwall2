@@ -226,8 +226,8 @@ function gen_outbound(flag, node, tag, proxy_table)
 					tti = 50,
 					uplinkCapacity = 12,
 					downlinkCapacity = 100,
-					CwndMultiplier = 1,
-					MaxSendingWindow = 2 * 1024 * 1024
+					cwndMultiplier = 1,
+					maxSendingWindow = 2 * 1024 * 1024
 				} or nil,
 				wsSettings = (node.transport == "ws") and {
 					path = node.ws_path or "/",
@@ -732,8 +732,8 @@ function gen_config_server(node)
 						tti = 50,
 						uplinkCapacity = 12,
 						downlinkCapacity = 100,
-						CwndMultiplier = 1,
-						MaxSendingWindow = 2 * 1024 * 1024
+						cwndMultiplier = 1,
+						maxSendingWindow = 2 * 1024 * 1024
 					} or nil,
 					wsSettings = (node.transport == "ws") and {
 						host = node.ws_host or nil,
