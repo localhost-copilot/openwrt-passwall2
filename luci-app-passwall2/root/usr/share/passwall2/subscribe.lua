@@ -760,7 +760,7 @@ local function parseClashNode(node, add_mode, group, sub_cfg)
 			result.type = 'sing-box'
 			result.protocol = "anytls"
 		else
-			log(2, i18n.translatef("Skip the %s node because the %s core program is not installed.", "AnyTLS", "AnyTLS", "Sing-Box 1.12"))
+			log(2, i18n.translatef("Skip the %s node because the %s core program is not installed.", "AnyTLS", "Sing-Box 1.12"))
 			return nil
 		end
 		result.password = node.password
@@ -1665,7 +1665,7 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 			result.type = 'sing-box'
 			result.protocol = "hysteria"
 		else
-			log(2, i18n.translatef("Skip the %s node because the %s core program is not installed.", "Hysteria", "Hysteria", "Sing-Box"))
+			log(2, i18n.translatef("Skip the %s node because the %s core program is not installed.", "Hysteria", "Sing-Box"))
 			return nil
 		end
 
@@ -1778,7 +1778,7 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 			result.type = 'sing-box'
 			result.protocol = "tuic"
 		else
-			log(2, i18n.translatef("Skip the %s node because the %s core program is not installed.", "Tuic", "Tuic", "Sing-Box"))
+			log(2, i18n.translatef("Skip the %s node because the %s core program is not installed.", "Tuic", "Sing-Box"))
 			return nil
 		end
 
@@ -1836,7 +1836,7 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 			result.type = 'sing-box'
 			result.protocol = "anytls"
 		else
-			log(2, i18n.translatef("Skip the %s node because the %s core program is not installed.", "AnyTLS", "AnyTLS", "Sing-Box 1.12"))
+			log(2, i18n.translatef("Skip the %s node because the %s core program is not installed.", "AnyTLS", "Sing-Box 1.12"))
 			return nil
 		end
 
