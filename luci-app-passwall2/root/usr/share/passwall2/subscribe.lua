@@ -1068,6 +1068,11 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 				if idx_pn then
 					result.plugin = plugin_info:sub(1, idx_pn - 1)
 					result.plugin_opts = plugin_info:sub(idx_pn + 1, #plugin_info)
+					-- Some ShadowTLS subscriptions utilize SIP003.
+					result.plugin_opts = result.plugin_opts:gsub("^password=", "passwd=")
+					result.plugin_opts = result.plugin_opts:gsub(";password=", ";passwd=")
+					result.plugin_opts = result.plugin_opts:gsub("^version=([123])", "v%1=1")
+					result.plugin_opts = result.plugin_opts:gsub(";version=([123])", ";v%1=1")
 				else
 					result.plugin = plugin_info
 				end
@@ -1174,10 +1179,22 @@ local function processData(szType, content, add_mode, group, sub_cfg)
 						result.plugin_opts = nil
 					end
 				elseif result.type == 'sing-box' then
-					if result.plugin ~= "obfs-local" and result.plugin ~= "v2ray-plugin" then
+					if result.plugin ~= "obfs-local" and result.plugin ~= "v2ray-plugin" and result.plugin ~= "shadow-tls" then
 						result.error_msg = i18n.translatef("%s unsupport SS %s plugin.", "Sing-Box", result.plugin)
 					else
 						result.plugin_enabled = "1"
+						-- Some ShadowTLS subscriptions utilize SIP003.
+						if result.plugin == "shadow-tls" then
+							for item in result.plugin_opts:gmatch("[^;]+") do
+								local key, value = item:match("^([^=]+)=(.*)$")
+								if key == "host" then result.shadowtls_serverName = value end
+								if key == "passwd" then result.shadowtls_password = value end
+								if key:match("^v[123]$") then result.shadowtls_version = key:sub(2) end
+							end
+							result.shadowtls = "1"
+							result.plugin_opts = nil
+							result.plugin_enabled = nil
+						end
 					end
 				else
 					result.plugin_enabled = "1"
