@@ -1058,6 +1058,9 @@ function gen_config(var)
 	function gen_loopback(outbound_tag, loopback_dst)
 		if not outbound_tag or outbound_tag == "" then return nil end
 		local inbound_tag = loopback_dst and "lo-to-" .. loopback_dst or outbound_tag .. "-lo"
+		for _, o in ipairs(outbounds) do
+			if o.tag == outbound_tag and o.protocol == "loopback" and o.settings.inboundTag == inbound_tag then return o end
+		end
 		local loopback_outbound = {
 			protocol = "loopback",
 			tag = outbound_tag,
