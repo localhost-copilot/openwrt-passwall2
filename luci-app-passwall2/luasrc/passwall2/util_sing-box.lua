@@ -9,6 +9,7 @@ local ech_domain = {}
 
 local local_version = api.get_app_version("sing-box"):match("[^v]+")
 local version_ge_1_14_0 = api.compare_versions(local_version, ">=", "1.14.0")
+local version_ge_1_15_0 = api.compare_versions(local_version, ">=", "1.15.0")
 
 local GLOBAL = {
 	DNS_SERVER = {}
@@ -248,7 +249,7 @@ function gen_outbound(flag, node, tag, proxy_table)
 				enabled = true,
 				disable_sni = (node.tls_disable_sni == "1") and true or false, -- Do not send the server name in ClientHello.
 				server_name = node.tls_serverName, -- Used to verify the hostname on the returned certificate, unless the settings are insecure. It is also included in ClientHello to support virtual hosts, unless it is an IP address.
-				insecure = node.tls_allowInsecure == "1" or (node.tls_pinSHA256 and node.tls_pinSHA256 ~= ""), -- Accepts any server certificate. (Also compatible with xray's pinnedPeerCertSha256)
+				insecure = node.tls_allowInsecure == "1", -- Accepts any server certificate.
 				alpn = alpn, -- A list of supported application layer protocols, arranged in order of priority. If both peers support ALPN, the protocol selected will be one of these protocols; otherwise, the connection will fail.
 				--max_version = "1.3",
 				fragment = fragment,
@@ -294,6 +295,13 @@ function gen_outbound(flag, node, tag, proxy_table)
 					short_id = node.reality_shortId
 				} or nil
 			}
+			if version_ge_1_15_0 then
+				if node.tls_pinSHA256 and node.tls_pinSHA256 ~= "" then
+					tls.certificate_sha256 = { api.sha256_xray_sb(node.tls_pinSHA256) }
+				end
+			else
+				tls.insecure = node.tls_allowInsecure == "1" or (node.tls_pinSHA256 and node.tls_pinSHA256 ~= "")
+			end
 		end
 
 		local mux = nil

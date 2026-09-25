@@ -1869,6 +1869,25 @@ function fetch_cert_sha256(host, port, sni, timeout)
 	return fp:upper()
 end
 
+function sha256_xray_sb(str)
+	local decoded = base64Decode(str)
+	if decoded ~= str and #decoded == 32 then return str end
+	local hex = str:gsub(":", "")
+	if #hex ~= 64 or not hex:match("^[A-Fa-f0-9]+$") then return str end
+	local binary = hex:gsub("%x%x", function(byte)
+		return string.char(tonumber(byte, 16))
+	end)
+	return base64Encode(binary)
+end
+
+function sha256_sb_xray(str)
+	local binary = base64Decode(str)
+	if binary == str or #binary ~= 32 then return str end
+	return (binary:gsub(".", function(byte)
+		return string.format("%02X", string.byte(byte))
+	end))
+end
+
 function get_dnsmasq_server_domain()
 	local dnsmasq_server = uci:get("dhcp", "@dnsmasq[0]", "server")
 	local dnsmasq_server_t = {}
