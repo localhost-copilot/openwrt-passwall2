@@ -1567,6 +1567,16 @@ function set_default_cbi()
 		end
 	end
 	if true then
+		--Table
+		local Table = cbi.Table
+		local default_init = Table.__init__
+		function Table.__init__(self, form, ...)
+			default_init(self, form, ...)
+			-- The Table's map is an independent data source and needs to receive the API from its parent form.
+			self.map.api = form.api
+		end
+	end
+	if true then
 		--TextValue
 		local TextValue = cbi.TextValue
 		local default_init = TextValue.__init__
