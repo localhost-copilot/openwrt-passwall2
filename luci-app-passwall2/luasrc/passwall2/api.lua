@@ -893,18 +893,25 @@ function clone(org)
 end
 
 local function get_bin_version_cache(file, cmd)
-	sys.call("mkdir -p " .. CACHE_PATH)
-	if fs.access(file) then
+	if file and file ~= "" and fs.access(file) then
 		chmod_755(file)
-		local md5 = sys.exec("echo -n $(md5sum " .. file .. " | awk '{print $1}')")
-		if fs.access(CACHE_PATH .. "/" .. md5) then
-			return sys.exec("echo -n $(cat %s)" % { CACHE_PATH .. "/" .. md5 })
-		else
-			local version = sys.exec(string.format("echo -n $(%s %s)", file, cmd))
-			if version and version ~= "" then
-				sys.call("echo '%s' > %s"  % { version, CACHE_PATH .. "/" .. md5})
-				return version
+		local stat = fs.stat(file)
+		local cache_file
+		if stat and stat.dev and stat.ino and stat.size and stat.mtime and stat.ctime then
+			-- Use metadata to avoid hashing the entire binary on every lookup.
+			cache_file = CACHE_PATH .. "/binver_" .. table.concat({stat.dev, stat.ino, stat.size, stat.mtime, stat.ctime}, "_")
+			local cached = fs.readfile(cache_file)
+			if cached and trim(cached) ~= "" then
+				return trim(cached)
 			end
+		end
+		local version = sys.exec(string.format("echo -n $(%s %s)", util.shellquote(file), cmd))
+		if version and version ~= "" then
+			if cache_file then
+				fs.mkdirr(CACHE_PATH)
+				fs.writefile(cache_file, version)
+			end
+			return version
 		end
 	end
 	return ""
@@ -926,7 +933,7 @@ end
 
 function is_file(path)
 	if path and #path > 1 then
-		if sys.exec('[ -f "%s" ] && echo -n 1' % path) == "1" then
+		if fs.stat(path, "type") == "reg" then
 			return true
 		end
 	end
@@ -935,7 +942,7 @@ end
 
 function is_dir(path)
 	if path and #path > 1 then
-		if sys.exec('[ -d "%s" ] && echo -n 1' % path) == "1" then
+		if fs.stat(path, "type") == "dir" then
 			return true
 		end
 	end
@@ -1486,7 +1493,7 @@ function cacheFileCompareToLogic(file, str)
 end
 
 function is_js_luci()
-	return sys.call('[ -f "/www/luci-static/resources/uci.js" ]') == 0
+	return fs.stat("/www/luci-static/resources/uci.js", "type") == "reg"
 end
 
 function set_default_cbi()
