@@ -1263,7 +1263,7 @@ function to_check(arch, app_name)
 	}
 end
 
-function to_download(app_name, url, size)
+function to_download(app_name, url, size, task_id)
 	local result = check_path(app_name)
 	if result.code ~= 0 then
 		return result
@@ -1275,7 +1275,13 @@ function to_download(app_name, url, size)
 
 	sys.call("/bin/rm -f /tmp/".. app_name .."_download.*")
 
-	local tmp_file = trim(util.exec("mktemp -u -t ".. app_name .."_download.XXXXXX"))
+	local tmp_file
+	if type(task_id) == "string" and task_id:match("^[%w_-]+$") then
+		tmp_file = "/tmp/" .. app_name .. "_download." .. task_id
+		exec("/bin/rm", {"-f", tmp_file})
+	else
+		tmp_file = trim(util.exec("mktemp -u -t " .. app_name .. "_download.XXXXXX"))
+	end
 
 	if size then
 		local kb1 = get_free_space("/tmp")
@@ -1299,6 +1305,23 @@ function to_download(app_name, url, size)
 	end
 
 	return {code = 0, file = tmp_file, zip = com[app_name].zipped }
+end
+
+function to_download_progress(app_name, task_id, total_size)
+	if not com[app_name] or type(task_id) ~= "string" or not task_id:match("^[%w_-]+$") then
+		return {code = 1, error = i18n.translate("Invalid download task.")}
+	end
+
+	total_size = tonumber(total_size) or 0
+	local tmp_file = "/tmp/" .. app_name .. "_download." .. task_id
+	local downloaded = tonumber(fs.stat(tmp_file, "size")) or 0
+	local percent
+	if total_size > 0 then
+		-- Leave 100% for the download request's success callback.
+		percent = math.min(99, math.floor(downloaded * 100 / total_size))
+	end
+
+	return {code = 0, downloaded = downloaded, total = total_size, percent = percent}
 end
 
 function to_extract(app_name, file, subfix)
