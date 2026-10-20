@@ -57,3 +57,28 @@ Fetch upstream with `git fetch upstream --tags`, merge `upstream/main`, and
 rerun checks. Keep customization commits separate. The inherited SDK build
 workflow is manually triggered; it must use authenticated checkout when
 building this private source. Do not make the repository public to build it.
+
+## Local package build
+
+`scripts/package-local.py` builds architecture-independent IPKs by applying
+this fork's source changes over checksum-pinned upstream 26.10.20 packages.
+It preserves upstream package metadata, dependencies and maintainer scripts,
+updates the version and conffiles, and compiles the modified Chinese catalog.
+This does not compile firmware or replace an SDK build.
+
+```sh
+python3 scripts/package-local.py /path/to/upstream-ipks --po2lmo /path/to/po2lmo
+```
+
+The input directory must contain the official `passwall2.ipk` and `zh-cn.ipk`
+matching the hashes in the script. Outputs go to ignored `.build/packages/`.
+Build `po2lmo` from the official LuCI sources (the openwrt-19.07 converter
+works with this router's LMO format). Its source directory needs `po2lmo.c`,
+`template_lmo.c`, `template_lmo.h`, `plural_formula.y`, and the `contrib/lemon.c`
+and `contrib/lempar.c` parser generator. Compile lemon, generate the plural
+parser, then link po2lmo with template_lmo and the generated parser.
+
+The r3 deployment fixes a UI dependency check: `api.finded_com()` resolves
+configured proxy applications, so it cannot detect the system nft utility.
+Use the system command lookup for nft. Verify enabling via the actual LuCI
+Save & Apply action, rather than relying only on direct UCI writes.

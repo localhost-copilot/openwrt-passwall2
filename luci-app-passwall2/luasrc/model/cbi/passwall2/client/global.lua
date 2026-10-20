@@ -84,7 +84,8 @@ o.rmempty = false
 o.default = "0"
 o.description = translate("Dedicated router mode: keep blocking direct TCP, UDP, DNS and IPv6 even when the proxy is stopped. Only trusted LAN devices, IPv4 proxy endpoints, numeric NTP servers and DHCP are allowed. Requires firewall4.")
 o.validate = function(self, value)
-	if value == "1" and (not api.finded_com("nft") or not api.fs.access("/sbin/fw4")) then
+	-- finded_com resolves configured proxy applications, not system utilities.
+	if value == "1" and (api.sys.call("command -v nft >/dev/null 2>&1") ~= 0 or not api.fs.access("/sbin/fw4")) then
 		return nil, translate("The kill switch requires firewall4 and nftables.")
 	end
 	return value
