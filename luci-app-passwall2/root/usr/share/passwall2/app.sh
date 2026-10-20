@@ -900,6 +900,7 @@ acl_node() {
 }
 
 start() {
+	/usr/share/passwall2/kill_switch.sh || return 1
 	busybox pgrep -f ${TMP_PATH}/bin > /dev/null 2>&1 && {
 		logger -t PW2-RESTART "Upgrade or overload residue is detected, and the subprocess is being called to perform complete cleaning..."
 		(stop "$1")

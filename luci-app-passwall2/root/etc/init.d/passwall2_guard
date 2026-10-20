@@ -1,0 +1,13 @@
+#!/bin/sh /etc/rc.common
+# Apply before network startup; the firewall include replays the cached policy.
+START=18
+STOP=99
+
+start() {
+	/usr/share/passwall2/kill_switch.sh
+}
+
+stop() {
+	# Turning off the proxy or stopping services must not enable direct routing.
+	return 0
+}

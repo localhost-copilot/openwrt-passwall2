@@ -79,6 +79,43 @@ s:tab("Main", translate("Main"))
 o = s:taboption("Main", Flag, "enabled", translate("Main switch"))
 o.rmempty = false
 
+o = s:taboption("Main", Flag, "kill_switch", translate("Block direct Internet access"))
+o.rmempty = false
+o.default = "0"
+o.description = translate("Dedicated router mode: keep blocking direct TCP, UDP, DNS and IPv6 even when the proxy is stopped. Only trusted LAN devices, IPv4 proxy endpoints, numeric NTP servers and DHCP are allowed. Requires firewall4.")
+o.validate = function(self, value)
+	if value == "1" and (not api.finded_com("nft") or not api.fs.access("/sbin/fw4")) then
+		return nil, translate("The kill switch requires firewall4 and nftables.")
+	end
+	return value
+end
+
+o = s:taboption("Main", DummyValue, "_kill_switch_status", translate("Kill switch status"))
+o.cfgvalue = function()
+	return api.sys.call("nft list table inet passwall2_guard >/dev/null 2>&1") == 0
+		and translate("Protection active") or translate("Protection inactive")
+end
+
+o = s:taboption("Main", DynamicList, "kill_switch_lan_devices", translate("Trusted LAN devices"))
+o:depends("kill_switch", "1")
+o.placeholder = "br-lan"
+o.description = translate("Linux device names, not network section names. Defaults to br-lan. Never add a WAN device.")
+o.validate = function(self, value)
+	if #value <= 15 and value ~= "lo" and value:match("^[%w_.:-]+$") then return value end
+	return nil, translate("Invalid trusted LAN device")
+end
+
+o = s:taboption("Main", DynamicList, "kill_switch_endpoints", translate("Extra allowed proxy endpoints"))
+o:depends("kill_switch", "1")
+o.placeholder = "tcp:203.0.113.10:443"
+o.description = translate("The selected IPv4 node is allowed automatically. Extra endpoints use tcp:IPv4:port or udp:IPv4:port. Hostname and IPv6 nodes need a different setup; do not enable direct DNS as a workaround.")
+o.validate = function(self, value)
+	local policy = require "luci.passwall2.kill_switch"
+	local rules = policy.render({enabled = "1", endpoints = {value}})
+	if rules then return value end
+	return nil, translate("Use tcp:IPv4:port or udp:IPv4:port")
+end
+
 ---- Node
 o = s:taboption("Main", ListValue, "node", "<a style='color: red'>" .. translate("Node") .. "</a>")
 o.template = m:template_path("/cbi/nodes_listvalue")

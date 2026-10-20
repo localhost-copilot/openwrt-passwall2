@@ -1,0 +1,1 @@
+include "/etc/passwall2/kill-switch.nft"

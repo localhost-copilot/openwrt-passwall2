@@ -1,3 +1,12 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: PassWall2\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
 msgid "Auto"
 msgstr "自动"
 
@@ -2507,4 +2516,40 @@ msgstr "更新失败"
 
 msgid "Unknown error"
 msgstr "未知错误"
+
+msgid "Block direct Internet access"
+msgstr "断线禁止直连"
+
+msgid "Dedicated router mode: keep blocking direct TCP, UDP, DNS and IPv6 even when the proxy is stopped. Only trusted LAN devices, IPv4 proxy endpoints, numeric NTP servers and DHCP are allowed. Requires firewall4."
+msgstr "专用路由器模式：代理停止后仍阻止 TCP、UDP、DNS 和 IPv6 直连。仅放行可信 LAN 设备、IPv4 代理节点、IP 地址形式的 NTP 服务器和 DHCP。需要 firewall4。"
+
+msgid "The kill switch requires firewall4 and nftables."
+msgstr "断线保护需要 firewall4 和 nftables。"
+
+msgid "Kill switch status"
+msgstr "断线保护状态"
+
+msgid "Protection active"
+msgstr "保护已生效"
+
+msgid "Protection inactive"
+msgstr "保护未生效"
+
+msgid "Trusted LAN devices"
+msgstr "可信 LAN 设备"
+
+msgid "Linux device names, not network section names. Defaults to br-lan. Never add a WAN device."
+msgstr "填写 Linux 设备名，而非网络配置名称；默认 br-lan。不要加入 WAN 设备。"
+
+msgid "Invalid trusted LAN device"
+msgstr "可信 LAN 设备名无效"
+
+msgid "Extra allowed proxy endpoints"
+msgstr "额外放行的代理端点"
+
+msgid "The selected IPv4 node is allowed automatically. Extra endpoints use tcp:IPv4:port or udp:IPv4:port. Hostname and IPv6 nodes need a different setup; do not enable direct DNS as a workaround."
+msgstr "自动放行当前选择的 IPv4 节点。额外端点使用 tcp:IPv4:端口 或 udp:IPv4:端口。域名和 IPv6 节点需要其他配置，不要用直连 DNS 绕过保护。"
+
+msgid "Use tcp:IPv4:port or udp:IPv4:port"
+msgstr "请使用 tcp:IPv4:端口 或 udp:IPv4:端口"
 

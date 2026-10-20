@@ -1,0 +1,79 @@
+-- Dedicated-router fail-closed policy, independent of proxy process lifetime.
+local M = {}
+
+local function ipv4(value)
+	if type(value) ~= "string" then return false end
+	local a, b, c, d = value:match("^(%d+)%.(%d+)%.(%d+)%.(%d+)$")
+	if not a then return false end
+	for _, part in ipairs({a, b, c, d}) do
+		if #part > 3 or tonumber(part) > 255 or (#part > 1 and part:sub(1, 1) == "0") then return false end
+	end
+	return true
+end
+
+local function list(value)
+	if type(value) == "table" then return value end
+	if value and value ~= "" then return {value} end
+	return {}
+end
+
+function M.render(config)
+	local lines = {"add table inet passwall2_guard", "delete table inet passwall2_guard"}
+	if config.enabled == nil or config.enabled == "0" then return table.concat(lines, "\n") .. "\n" end
+	if config.enabled ~= "1" then return nil, "Invalid kill switch setting" end
+	local devices = list(config.devices)
+	if #devices == 0 then devices = {"br-lan"} end
+	local quoted = {}
+	for _, device in ipairs(devices) do
+		if type(device) ~= "string" or #device > 15 or not device:match("^[%w_.:-]+$") or device == "lo" then
+			return nil, "Invalid trusted LAN device"
+		end
+		quoted[#quoted + 1] = string.format('%q', device)
+	end
+	local endpoints, seen = {}, {}
+	local function endpoint(protocol, address, port)
+		port = tonumber(port)
+		if not ipv4(address) or not port or port < 1 or port > 65535 or port % 1 ~= 0 then
+			return false
+		end
+		local rule = string.format("        ip daddr %s %s dport %d accept", address, protocol, port)
+		if not seen[rule] then endpoints[#endpoints + 1] = rule; seen[rule] = true end
+		return true
+	end
+	local node = config.node or {}
+	if ipv4(node.address) then
+		if not endpoint("tcp", node.address, node.port) or not endpoint("udp", node.address, node.port) then
+			return nil, "Invalid selected node port"
+		end
+	end
+	for _, value in ipairs(list(config.endpoints)) do
+		if type(value) ~= "string" then return nil, "Invalid extra endpoint" end
+		local protocol, address, port = value:match("^(%a+):([%d.]+):(%d+)$")
+		if (protocol ~= "tcp" and protocol ~= "udp") or not endpoint(protocol, address, port) then
+			return nil, "Invalid extra endpoint; use tcp:IPv4:port or udp:IPv4:port"
+		end
+	end
+	-- Hostname resolution must never create an unproxied DNS bootstrap path.
+	-- Missing/unsupported nodes intentionally produce a deny-only policy.
+	local lan = "{ " .. table.concat(quoted, ", ") .. " }"
+	lines[#lines + 1] = "table inet passwall2_guard {"
+	lines[#lines + 1] = "    chain forward {"
+	lines[#lines + 1] = "        type filter hook forward priority -10; policy drop;"
+	lines[#lines + 1] = "        iifname " .. lan .. " oifname " .. lan .. " accept"
+	lines[#lines + 1] = "    }"
+	lines[#lines + 1] = "    chain output {"
+	lines[#lines + 1] = "        type filter hook output priority -10; policy drop;"
+	lines[#lines + 1] = '        oifname "lo" accept'
+	lines[#lines + 1] = "        oifname " .. lan .. " accept"
+	lines[#lines + 1] = "        meta nfproto ipv6 drop"
+	for _, rule in ipairs(endpoints) do lines[#lines + 1] = rule end
+	for _, address in ipairs(list(config.ntp_servers)) do
+		if ipv4(address) then lines[#lines + 1] = "        ip daddr " .. address .. " udp dport 123 accept" end
+	end
+	lines[#lines + 1] = "        udp sport 68 udp dport 67 accept"
+	lines[#lines + 1] = "    }"
+	lines[#lines + 1] = "}"
+	return table.concat(lines, "\n") .. "\n"
+end
+
+return M

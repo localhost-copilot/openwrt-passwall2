@@ -33,6 +33,8 @@ uci commit firewall
 [ ! -s "/etc/config/passwall2" ] && cp -f /usr/share/passwall2/0_default_config /etc/config/passwall2
 
 chmod +x /usr/share/passwall2/*.sh
+/etc/init.d/passwall2_guard enable
+/usr/share/passwall2/kill_switch.sh || logger -t passwall2 "Kill switch policy requires attention"
 
 rm -f /tmp/etc/passwall2_tmp/passwall2_version /tmp/luci-indexcache /tmp/luci-indexcache.*
 rm -rf /tmp/luci-modulecache/
