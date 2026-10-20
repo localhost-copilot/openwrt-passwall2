@@ -1,11 +1,18 @@
 #pw-monitor {
-  --pm-bg: #10191e;
-  --pm-panel: #182329;
-  --pm-line: #2a383f;
-  --pm-text: #e9f0ef;
-  --pm-muted: #95a9ad;
-  --pm-down: #65d6ba;
-  --pm-up: #e8b36a;
+  /* Use Aurora's resolved palette for manual and device theme modes. */
+  --pm-bg: var(--bg, #f5f7fa);
+  --pm-panel: var(--surface, #ffffff);
+  --pm-line: var(--hairline, #dce2e8);
+  --pm-text: var(--text, #18232e);
+  --pm-muted: var(--text-muted, #526171);
+  --pm-down: var(--success, #087c62);
+  --pm-up: var(--warning, #946000);
+  --pm-control: var(--surface-sunken, #edf1f5);
+  --pm-hover: var(--hover-faint, #e3e9ef);
+  --pm-good-bg: var(--success-surface, #e3f4ed);
+  --pm-bad-bg: var(--danger-surface, #fbe9e8);
+  --pm-bad: var(--danger, #b42318);
+  --pm-warn-bg: var(--warning-surface, #fff3d6);
   background: var(--pm-bg);
   color: var(--pm-text);
   border-radius: 16px;
@@ -68,7 +75,7 @@
   letter-spacing: 1px;
   vertical-align: middle;
   color: var(--pm-down);
-  border: 1px solid #375c51;
+  border: 1px solid var(--pm-down);
   border-radius: 5px;
   padding: 3px 6px;
   margin-left: 14px;
@@ -81,8 +88,8 @@
   color: var(--pm-muted);
 }
 #pw-monitor button {
-  background: #26373e;
-  border: 1px solid #40545d;
+  background: var(--pm-control);
+  border: 1px solid var(--pm-line);
   color: var(--pm-text);
   border-radius: 8px;
   padding: 9px 14px;
@@ -91,16 +98,16 @@
   white-space: nowrap;
 }
 #pw-monitor button:hover {
-  background: #31464f;
+  background: var(--pm-hover);
 }
 #pw-monitor button:focus-visible {
   outline: 2px solid var(--pm-down);
   outline-offset: 3px;
 }
 #pw-monitor .pm-alert {
-  background: #472c2b;
-  border: 1px solid #84554e;
-  color: #ffc7bb;
+  background: var(--pm-bad-bg);
+  border: 1px solid var(--pm-bad);
+  color: var(--pm-bad);
   padding: 12px 16px;
   border-radius: 10px;
   margin-bottom: 18px;
@@ -127,7 +134,7 @@
   color: var(--pm-muted);
 }
 #pw-monitor .pm-arrow {
-  color: #5a767d;
+  color: var(--pm-muted);
   font-size: 24px;
 }
 #pw-monitor .pm-metrics {
@@ -236,22 +243,22 @@
   font-variant-numeric: tabular-nums;
 }
 #pw-monitor .pm-badge {
-  background: #2b393f;
+  background: var(--pm-control);
   padding: 3px 8px;
   border-radius: 5px;
   color: var(--pm-muted);
 }
 #pw-monitor .pm-badge.good {
-  background: #203e36;
-  color: #83dfc7;
+  background: var(--pm-good-bg);
+  color: var(--pm-down);
 }
 #pw-monitor .pm-badge.bad {
-  background: #4b302e;
-  color: #f3a99b;
+  background: var(--pm-bad-bg);
+  color: var(--pm-bad);
 }
 #pw-monitor .pm-badge.warn {
-  background: #463c28;
-  color: #e8c78b;
+  background: var(--pm-warn-bg);
+  color: var(--pm-up);
 }
 #pw-monitor .pm-note {
   font-size: 11px;
@@ -304,7 +311,7 @@
 #pw-monitor .pm-footer {
   display: flex;
   justify-content: space-between;
-  color: #70868c;
+  color: var(--pm-muted);
   font-size: 10px;
   letter-spacing: 0.5px;
   padding-top: 20px;

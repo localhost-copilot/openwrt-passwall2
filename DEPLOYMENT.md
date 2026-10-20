@@ -1,5 +1,14 @@
 # Cudy TR3000 deployment — 2026-10-20
 
+## Theme update (r5)
+
+The monitor inherits Aurora's palette for cards, controls, status badges and
+canvas charts. Manual light/dark switching and device light/dark changes were
+verified on the router without reloading the page. The 390px mobile layout has
+no page overflow. Telemetry, proxy and guard status remain healthy.
+Screenshots: `.build/monitor-light-r5.png` and `.build/monitor-dark-r5.png`.
+Package checks and JavaScript syntax validation passed.
+
 ## Monitor update (r4)
 
 The router now has app/Chinese packages 26.10.20-r4 and Xray 26.10.17.

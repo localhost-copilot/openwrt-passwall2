@@ -32,6 +32,8 @@
   const canvas = el("chart");
 
   function chart() {
+    const palette = getComputedStyle(root);
+    const color = (name) => palette.getPropertyValue("--pm-" + name).trim();
     const rect = canvas.getBoundingClientRect(),
       ratio = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.max(1, rect.width * ratio);
@@ -54,22 +56,22 @@
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const y = top + ((bottom - top) * i) / 4;
-      ctx.strokeStyle = "#2a383f";
+      ctx.strokeStyle = color("line");
       ctx.beginPath();
       ctx.moveTo(left, y);
       ctx.lineTo(right, y);
       ctx.stroke();
-      ctx.fillStyle = "#95a9ad";
+      ctx.fillStyle = color("muted");
       ctx.fillText((scale * (1 - i / 4)).toFixed(scale < 4 ? 1 : 0), 1, y + 3);
     }
     ctx.fillText("Mbps", 0, h - 4);
     ctx.fillText("−2 分钟", left, h - 4);
     ctx.fillText("现在", Math.max(left, right - 22), h - 4);
-    for (const [key, color] of [
-      ["down", "#65d6ba"],
-      ["up", "#e8b36a"],
+    for (const [key, stroke] of [
+      ["down", color("down")],
+      ["up", color("up")],
     ]) {
-      ctx.strokeStyle = color;
+      ctx.strokeStyle = stroke;
       ctx.lineWidth = 2;
       ctx.beginPath();
       let drawing = false;
@@ -372,6 +374,7 @@
     }
   });
   window.addEventListener("pagehide", () => {
+    themeObserver.disconnect();
     clearTimeout(snapshotTimer);
     clearTimeout(probeTimer);
     clearTimeout(devicesTimer);
@@ -380,6 +383,18 @@
     if (devicesRequest) devicesRequest.abort();
   });
   new ResizeObserver(chart).observe(canvas.parentElement);
+  // Aurora changes data-darkmode for both manual and device theme switching.
+  // Observe ancestors only, avoiding redraws caused by telemetry DOM updates.
+  const themeObserver = new MutationObserver(chart);
+  for (
+    let ancestor = root.parentElement;
+    ancestor;
+    ancestor = ancestor.parentElement
+  )
+    themeObserver.observe(ancestor, {
+      attributes: true,
+      attributeFilter: ["data-darkmode", "data-theme", "class", "style"],
+    });
   sample();
   check();
   sampleDevices();
