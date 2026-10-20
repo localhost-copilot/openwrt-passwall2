@@ -40,7 +40,7 @@ jobs:
       - name: Check version
         id: check_version
         env:
-          url_tags: https://api.github.com/repos/${{ env.passwall2 }}/releases/latest
+          GH_TOKEN: ${{ github.token }}
         run: |
           cd luci-app-passwall2
           latest_version=$(awk -F ':=' '/^PKG_VERSION:=|^PKG_RELEASE:=/ {print $2}' Makefile | sed ':a;N;s/\$(PKG_VERSION)-//;s/\n$//;s/\n/-/;ba')
@@ -49,7 +49,7 @@ jobs:
           prerelease=$([ "${{ github.ref_name }}" == "main" ] && echo false || echo true)
           echo "prerelease=${prerelease}" >> $GITHUB_OUTPUT
 
-          remote_latest_version=$(wget -qO- -t1 -T2 ${{env.url_tags}} | jq -r '.tag_name')
+          remote_latest_version=$(gh api "repos/${{ env.passwall2 }}/releases/latest" --jq .tag_name 2>/dev/null || true)
 
           if [ -z "$remote_latest_version" ] || [ "$remote_latest_version" = "null" ]; then
             echo "Failed to fetch remote tags"
@@ -93,6 +93,11 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - name: Checkout private package source
+        uses: actions/checkout@v4
+        with:
+          path: passwall2-source
+          persist-credentials: false
       - name: Install packages
         run: |
           sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php /usr/local/lib/android
@@ -134,7 +139,7 @@ jobs:
 
           cat > feeds.tmp <<'EOF'
           src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main
-          src-git passwall2 https://github.com/${{ env.passwall2 }}.git;${{ github.ref_name }}
+          src-link passwall2 ${{ github.workspace }}/passwall2-source
           EOF
           cat feeds.conf.default >> feeds.tmp
           mv feeds.tmp feeds.conf.default
@@ -281,6 +286,11 @@ jobs:
           - platform: mipsel_mips32
             url_sdk: https://downloads.openwrt.org/snapshots/targets/bcm47xx/generic/openwrt-sdk-bcm47xx-generic_gcc-14.4.0_musl.Linux-x86_64.tar.zst
     steps:
+      - name: Checkout private package source
+        uses: actions/checkout@v4
+        with:
+          path: passwall2-source
+          persist-credentials: false
       - name: Initialization environment
         run: |
           sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php /usr/local/lib/android
@@ -329,7 +339,7 @@ jobs:
 
           cat > feeds.tmp <<'EOF'
           src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main
-          src-git passwall2 https://github.com/${{ env.passwall2 }}.git;${{ github.ref_name }}
+          src-link passwall2 ${{ github.workspace }}/passwall2-source
           EOF
           cat feeds.conf.default >> feeds.tmp
           mv feeds.tmp feeds.conf.default
