@@ -46,6 +46,37 @@ To migrate from an external guard, enable and verify this guard first, then
 remove the old guard. Two drop policies compose restrictively, so disabling
 this UI option cannot remove a separately installed external guard.
 
+## Router monitor
+
+The **实时监控** tab (`admin/services/passwall2/monitor`) is a read-only LuCI
+dashboard. Its authenticated endpoints expose selected telemetry, not full
+UCI or Xray configurations. It uses local static assets without a CDN.
+
+- System CPU, available-memory usage, temperature, uptime, conntrack count,
+  WAN interface counters, proxy process and independent guard status refresh
+  approximately every two seconds. WAN counters include tunnel overhead and
+  router traffic; their rates are not application download speeds.
+- Optional Bandix device traffic refreshes separately every five seconds,
+  so its slower API cannot delay the system/guard display. With Bandix absent,
+  disabled or unavailable, the UI explicitly reports missing device data.
+  Device labels are rendered as text, never HTML. Device totals depend on
+  Bandix's lifetime/storage configuration; this router uses memory-only data.
+- Exit-IP/HTTPS reachability checks use the generated Xray configuration's
+  loopback SOCKS inbound. No direct fallback is allowed. Results are cached
+  for 30 seconds, bounded by a six-second timeout and a process lock. Stopping
+  the proxy invalidates a cached success. The reported duration is an HTTPS
+  request time, not ICMP latency; a failed check may also mean the public
+  Cloudflare test endpoint is unavailable.
+- Sampling stops when the page is hidden or closed. Counter resets/reboots
+  do not produce negative speeds. Request failures show a stale-data warning
+  and unknown protection/process state rather than preserving green badges.
+
+No monitoring service or firewall interception is added by this package.
+Enable Bandix traffic collection separately if device statistics are wanted;
+the deployment enabled only its traffic module, without storage, DNS logging
+or rate limits. The monitor currently probes Xray's SOCKS inbound; it does not
+implement a Clash API or full per-connection inspection.
+
 ## Development and upstream synchronization
 
 Run `./tests/check.sh`. Validate rendered rules with `nft -c -f` on the target

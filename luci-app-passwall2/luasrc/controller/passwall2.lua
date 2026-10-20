@@ -33,6 +33,10 @@ function index()
 	e.dependent = true
 	e.acl_depends = { "luci-app-passwall2" }
 	--[[ Client ]]
+	entry({"admin", "services", appname, "monitor"}, template(appname .. "/monitor"), _("实时监控"), 0).leaf = true
+	entry({"admin", "services", appname, "monitor_status"}, call("monitor_status")).leaf = true
+	entry({"admin", "services", appname, "monitor_probe"}, call("monitor_probe")).leaf = true
+	entry({"admin", "services", appname, "monitor_devices"}, call("monitor_devices")).leaf = true
 	entry({"admin", "services", appname, "settings"}, cbi(appname .. "/client/global"), _("Basic Settings"), 1).dependent = true
 	entry({"admin", "services", appname, "node_list"}, cbi(appname .. "/client/node_list"), _("Node List"), 2).dependent = true
 	entry({"admin", "services", appname, "node_subscribe"}, cbi(appname .. "/client/node_subscribe"), _("Node Subscribe"), 3).dependent = true
@@ -277,6 +281,21 @@ end
 
 function clear_log()
 	luci.sys.call("echo '' > /tmp/log/passwall2.log")
+end
+
+function monitor_status()
+	http.header("Cache-Control", "no-store")
+	http_write_json(require("luci.passwall2.monitor").snapshot())
+end
+
+function monitor_probe()
+	http.header("Cache-Control", "no-store")
+	http_write_json(require("luci.passwall2.monitor").probe())
+end
+
+function monitor_devices()
+	http.header("Cache-Control", "no-store")
+	http_write_json(require("luci.passwall2.monitor").device_snapshot())
 end
 
 function index_status()

@@ -1,5 +1,29 @@
 # Cudy TR3000 deployment — 2026-10-20
 
+## Monitor update (r4)
+
+The router now has app/Chinese packages 26.10.20-r4 and Xray 26.10.17.
+The read-only monitor tab was verified in a real browser at desktop and
+390px mobile widths, including authenticated access (anonymous API requests
+return 403), safe rendering of device names, stale-data warnings, and pausing
+all three polling loops while hidden. Proxy stop and restart, TCP/UDP fail
+closed, and an unreachable-relay test passed; cached health does not mask a
+stopped proxy. The ATT exit recovered after each test.
+
+Bandix's traffic module is enabled with memory-only storage; DNS/connection
+recording and rate limits remain off. Existing segmentation offloads were not
+changed. System telemetry collection averaged 15 ms over ten target-router
+calls after separating the slower device API. Bandix RSS was about 4 MiB;
+these are spot measurements, not a throughput benchmark.
+
+Final r4 IPKs are in `.build/packages/`. The pre-monitor configuration backup
+is `.build/before-passwall2-monitor.tar.gz` (0600), including the previous
+Bandix settings. Browser screenshots are `.build/monitor-desktop.png` and
+`.build/monitor-mobile.png`. No full firmware build was triggered for this
+update. The r3 notes and hashes below are retained as the previous deployment.
+
+## Previous guard deployment (r3)
+
 Installed `luci-app-passwall2` and Chinese translations at `26.10.20-r3`
 on ImmortalWrt 24.10-SNAPSHOT, kernel 6.6.133, aarch64_cortex-a53.
 The selected ATT Reality node and Xray 26.10.10 configuration were preserved.

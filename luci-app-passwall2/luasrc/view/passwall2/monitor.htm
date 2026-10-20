@@ -1,0 +1,37 @@
+<%+header%>
+<link rel="stylesheet" href="<%=resource%>/passwall2/monitor.css?v=4">
+<main id="pw-monitor" data-status-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_status')%>" data-probe-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_probe')%>" data-devices-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_devices')%>">
+  <div class="pm-heading">
+    <div><div class="pm-eyebrow">PASSWALL 2 / NETWORK MONITOR</div><h2>链路总览<span class="pm-live">LIVE</span></h2><p>连接状态、流量与出口，一眼看清。</p></div>
+    <div class="pm-refresh"><span id="pm-updated">正在连接路由器…</span><button type="button" id="pm-refresh">刷新数据 ↻</button></div>
+  </div>
+  <div id="pm-error" class="pm-alert" role="status" hidden></div>
+  <section class="pm-route" aria-label="代理链路">
+    <div><span class="pm-label">本地网络</span><strong id="pm-device-count">— 台设备</strong><small>设备流量由 Bandix 采集</small></div><span class="pm-arrow">→</span>
+    <div><span class="pm-label">当前节点</span><strong id="pm-node">读取中…</strong><small id="pm-node-type">—</small></div><span class="pm-arrow">→</span>
+    <div><span class="pm-label">节点出口 IP</span><strong id="pm-exit">检测中…</strong><small id="pm-exit-detail">通过当前代理检测</small></div>
+  </section>
+  <section class="pm-metrics" aria-label="实时指标">
+    <article class="pm-card"><span class="pm-label"><i class="pm-dot pm-down"></i> 实时下载</span><div class="pm-value"><b id="pm-download">—</b><span>Mbps</span></div><small>WAN 接收 · 含隧道开销</small></article>
+    <article class="pm-card"><span class="pm-label"><i class="pm-dot pm-up"></i> 实时上传</span><div class="pm-value"><b id="pm-upload">—</b><span>Mbps</span></div><small>WAN 发送 · 含路由器流量</small></article>
+    <article class="pm-card"><span class="pm-label">CPU 使用率</span><div class="pm-value"><b id="pm-cpu">—</b><span>%</span></div><small id="pm-temperature">采样中…</small></article>
+    <article class="pm-card"><span class="pm-label">内存使用</span><div class="pm-value"><b id="pm-memory">—</b><span>%</span></div><small id="pm-memory-detail">读取中…</small></article>
+  </section>
+  <section class="pm-middle">
+    <article class="pm-panel pm-chart-panel"><div class="pm-panel-title"><h3>流量趋势</h3><span id="pm-interface">最近 2 分钟</span></div><div class="pm-chart"><canvas id="pm-chart" role="img" aria-label="最近两分钟 WAN 下载与上传速率曲线"></canvas></div><div class="pm-chart-footer"><span><i class="pm-dot pm-down"></i> 下载 <i class="pm-dot pm-up"></i> 上传</span><span>每 2 秒采样 · 页面打开期间</span></div></article>
+    <article class="pm-panel"><div class="pm-panel-title"><h3>链路健康</h3><span>实时状态</span></div><dl class="pm-health">
+      <div><dt>代理进程</dt><dd id="pm-proxy" class="pm-badge">读取中</dd></div>
+      <div><dt>节点连通性</dt><dd id="pm-health" class="pm-badge">检测中</dd></div>
+      <div><dt>断线保护</dt><dd id="pm-guard" class="pm-badge">读取中</dd></div>
+      <div><dt>系统连接数</dt><dd id="pm-connections">—</dd></div>
+      <div><dt>运行时间</dt><dd id="pm-uptime">—</dd></div>
+    </dl><p id="pm-probe-note" class="pm-note">出口检测约每 30 秒更新，经本地代理访问 Cloudflare。</p></article>
+  </section>
+  <section class="pm-panel"><div class="pm-panel-title"><h3>设备流量</h3><span>外网流量 · 按当前速率排序</span></div>
+    <div class="pm-table-wrap"><table class="pm-table"><thead><tr><th>设备</th><th>IP 地址</th><th>下载速率</th><th>上传速率</th><th>累计下载</th><th>累计上传</th></tr></thead><tbody id="pm-devices"><tr><td colspan="6" class="pm-empty">正在读取设备…</td></tr></tbody></table></div>
+    <p id="pm-devices-note" class="pm-note">累计流量从 Bandix 本次启动开始统计；当前页面不会修改代理或防火墙配置。</p>
+  </section>
+  <div class="pm-footer">PASSWALL 2 · 专用路由器监控<span>切换到后台时暂停采样</span></div>
+</main>
+<script src="<%=resource%>/passwall2/monitor.js?v=4.1"></script>
+<%+footer%>

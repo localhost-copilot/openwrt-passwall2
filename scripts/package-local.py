@@ -8,6 +8,7 @@ import argparse
 import hashlib
 import gzip
 import io
+import re
 from pathlib import Path
 import subprocess
 import tarfile
@@ -15,6 +16,8 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = "20ecdbee"
+MAKEFILE = (ROOT / "luci-app-passwall2/Makefile").read_text()
+VERSION = re.search(r"^PKG_VERSION:=(.+)$", MAKEFILE, re.M)[1] + "-r" + re.search(r"^PKG_RELEASE:=(.+)$", MAKEFILE, re.M)[1]
 
 
 def unpack(blob):
@@ -24,6 +27,13 @@ def unpack(blob):
 
 
 def put(files, name, data, mode=0o644):
+    # opkg's tar extractor needs directory entries for new resource folders.
+    for parent in reversed(Path(name).parents):
+        if str(parent) != "." and str(parent) not in files:
+            info = tarfile.TarInfo(str(parent))
+            info.type = tarfile.DIRTYPE
+            info.mode = 0o755
+            files[str(parent)] = (info, None)
     info = tarfile.TarInfo(name)
     info.mode = mode
     files[name] = (info, data)
@@ -60,7 +70,7 @@ def build(source, checksum, output, translation, compiler):
                     put(data, destination + name[len(prefix):], path.read_bytes(), path.stat().st_mode & 0o777)
         put(control, "conffiles", control["conffiles"][1] + b"/etc/passwall2/kill-switch.nft\n")
     lines = control["control"][1].decode().splitlines()
-    lines = ["Version: 26.10.20-r3" if line.startswith("Version:") else
+    lines = ["Version: " + VERSION if line.startswith("Version:") else
              "Installed-Size: " + str(sum(len(v[1]) for v in data.values() if v[1] is not None))
              if line.startswith("Installed-Size:") else line for line in lines]
     put(control, "control", ("\n".join(lines) + "\n").encode())
@@ -81,4 +91,4 @@ if __name__ == "__main__":
         ("passwall2.ipk", "55e74d464f847e96b7346fbabb2bb02cd022b0b16457d9c9ab3d1259be03347d", "luci-app-passwall2", False),
         ("zh-cn.ipk", "44fa35426a83c68c2566c8001e24e21fb13698ae5109309447e5db3675f9bc43", "luci-i18n-passwall2-zh-cn", True),
     ):
-        build(args.upstream_dir / source, sha, args.output / (name + "_26.10.20-r3_all.ipk"), translation, args.po2lmo)
+        build(args.upstream_dir / source, sha, args.output / (name + "_" + VERSION + "_all.ipk"), translation, args.po2lmo)
