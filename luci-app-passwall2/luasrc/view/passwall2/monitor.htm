@@ -1,37 +1,96 @@
 <%+header%>
-<link rel="stylesheet" href="<%=resource%>/passwall2/monitor.css?v=6">
+<link rel="stylesheet" href="<%=resource%>/passwall2/monitor.css?v=7.2">
 <main id="pw-monitor" data-status-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_status')%>" data-probe-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_probe')%>" data-devices-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_devices')%>" data-history-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_history')%>">
-  <div class="pm-heading">
-    <div><div class="pm-eyebrow">PASSWALL 2 / NETWORK MONITOR</div><h2>链路总览<span class="pm-live">LIVE</span></h2><p>连接状态、流量与出口，一眼看清。</p></div>
-    <div class="pm-refresh"><span id="pm-updated">正在连接路由器…</span><button type="button" id="pm-refresh">刷新数据 ↻</button></div>
-  </div>
+  <header class="pm-heading">
+    <div><h2>链路总览</h2><p id="pm-uptime">正在连接路由器…</p></div>
+    <div class="pm-actions">
+      <span id="pm-status" class="pm-badge" data-state="pending">连接中</span>
+      <button type="button" id="pm-refresh" class="pm-button" aria-label="刷新全部数据" title="刷新全部数据">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 7a7 7 0 0 1 11.5-1L20 9M4 15l2.5 3A7 7 0 0 0 18 17"/></svg>
+        刷新
+      </button>
+    </div>
+  </header>
   <div id="pm-error" class="pm-alert" role="status" hidden></div>
-  <section class="pm-route" aria-label="代理链路">
-    <div><span class="pm-label">本地网络</span><strong id="pm-device-count">— 台设备</strong><small>设备流量由 Bandix 采集</small></div><span class="pm-arrow">→</span>
-    <div><span class="pm-label">当前节点</span><strong id="pm-node">读取中…</strong><small id="pm-node-type">—</small></div><span class="pm-arrow">→</span>
-    <div><span class="pm-label">节点出口 IP</span><strong id="pm-exit">检测中…</strong><small id="pm-exit-detail">通过当前代理检测</small></div>
+
+  <section class="pm-panel pm-traffic" aria-label="流量总览">
+    <div class="pm-traffic-main">
+      <div class="pm-traffic-chart">
+        <div class="pm-traffic-head">
+          <div class="pm-rate pm-upload"><span aria-hidden="true">↑</span><b id="pm-upload">—</b><span class="pm-rate-unit">Mbps</span><span class="pm-label">上传</span></div>
+          <div class="pm-rate pm-download"><span aria-hidden="true">↓</span><b id="pm-download">—</b><span class="pm-rate-unit">Mbps</span><span class="pm-label">下载</span></div>
+        </div>
+        <div class="pm-chart-toolbar">
+          <span id="pm-interface" class="pm-label">WAN · 分钟平均速率</span>
+          <div id="pm-range" class="pm-segment" role="group" aria-label="流量历史时间范围">
+            <button type="button" data-seconds="600" aria-pressed="false">10 分钟</button>
+            <button type="button" data-seconds="3600" aria-pressed="true">1 小时</button>
+            <button type="button" data-seconds="86400" aria-pressed="false">24 小时</button>
+          </div>
+        </div>
+        <div class="pm-chart">
+          <canvas id="pm-chart" tabindex="0" role="img" aria-label="WAN 上传与下载历史速率。左右方向键查看采样值。"></canvas>
+          <span id="pm-chart-empty" class="pm-chart-empty">正在读取历史…</span>
+          <div id="pm-chart-tip" class="pm-chart-tip" hidden></div>
+        </div>
+        <p id="pm-history-note" class="pm-caption">正在读取历史…</p>
+      </div>
+      <aside class="pm-top-clients" aria-label="活跃设备排行">
+        <div class="pm-section-head"><span class="pm-label">活跃设备</span><a href="#pm-device-section">全部设备 <span aria-hidden="true">›</span></a></div>
+        <div id="pm-top-devices" class="pm-top-list"><p class="pm-empty">正在读取设备…</p></div>
+        <p class="pm-caption">按当前外网速率排序</p>
+      </aside>
+    </div>
+    <div class="pm-stats">
+      <div class="pm-stat"><span class="pm-label">接口累计</span><strong id="pm-traffic-total">—</strong><small class="pm-totals"><span class="pm-upload">↑ <span id="pm-total-up">—</span></span><span class="pm-download">↓ <span id="pm-total-down">—</span></span></small></div>
+      <div class="pm-stat"><span class="pm-label">CPU 使用率</span><strong><span id="pm-cpu">—</span><em>%</em></strong><small id="pm-temperature">采样中…</small></div>
+      <div class="pm-stat"><span class="pm-label">内存使用</span><strong><span id="pm-memory">—</span><em>%</em></strong><small id="pm-memory-detail">读取中…</small></div>
+      <div class="pm-stat"><span class="pm-label">系统连接</span><strong id="pm-connections">—</strong><small id="pm-connections-detail">读取中…</small></div>
+    </div>
   </section>
-  <section class="pm-metrics" aria-label="实时指标">
-    <article class="pm-card"><span class="pm-label"><i class="pm-dot pm-down"></i> 实时下载</span><div class="pm-value"><b id="pm-download">—</b><span>Mbps</span></div><small>WAN 接收 · 含隧道开销</small></article>
-    <article class="pm-card"><span class="pm-label"><i class="pm-dot pm-up"></i> 实时上传</span><div class="pm-value"><b id="pm-upload">—</b><span>Mbps</span></div><small>WAN 发送 · 含路由器流量</small></article>
-    <article class="pm-card"><span class="pm-label">CPU 使用率</span><div class="pm-value"><b id="pm-cpu">—</b><span>%</span></div><small id="pm-temperature">采样中…</small></article>
-    <article class="pm-card"><span class="pm-label">内存使用</span><div class="pm-value"><b id="pm-memory">—</b><span>%</span></div><small id="pm-memory-detail">读取中…</small></article>
+
+  <div class="pm-section-head pm-network-head"><h3>链路状态</h3><span id="pm-updated" class="pm-caption">等待更新</span></div>
+  <section class="pm-network" aria-label="链路状态">
+    <article id="pm-wan-card" class="pm-panel pm-connection" data-state="pending">
+      <span class="pm-label"><i class="pm-status-dot"></i>上联网络</span>
+      <strong id="pm-wan" class="pm-connection-value">—</strong>
+      <small id="pm-wan-detail">读取中…</small>
+    </article>
+    <article id="pm-proxy-card" class="pm-panel pm-connection" data-state="pending">
+      <span class="pm-label"><i class="pm-status-dot"></i>代理节点</span>
+      <strong id="pm-proxy" class="pm-connection-value">—</strong>
+      <small id="pm-node">读取中…</small><small id="pm-node-type"></small>
+    </article>
+    <article id="pm-guard-card" class="pm-panel pm-connection" data-state="pending">
+      <span class="pm-label"><i class="pm-status-dot"></i>断线保护</span>
+      <strong id="pm-guard" class="pm-connection-value">—</strong>
+      <small id="pm-guard-detail">读取中…</small>
+    </article>
+    <article id="pm-exit-card" class="pm-panel pm-connection" data-state="pending">
+      <span class="pm-label"><i class="pm-status-dot"></i>代理出口<span id="pm-health" class="pm-state-note">检测中</span></span>
+      <strong id="pm-exit" class="pm-connection-value pm-ip">—</strong>
+      <small id="pm-exit-detail">经当前代理检测</small>
+    </article>
   </section>
-  <section class="pm-middle">
-    <article class="pm-panel pm-chart-panel"><div class="pm-panel-title"><h3>流量趋势</h3><select id="pm-range" aria-label="流量历史时间范围"><option value="600">最近 10 分钟</option><option value="3600" selected>最近 1 小时</option><option value="86400">最近 24 小时</option></select></div><p id="pm-interface" class="pm-note">分钟平均速率</p><div class="pm-chart"><canvas id="pm-chart" role="img" aria-label="WAN 下载与上传历史速率曲线"></canvas></div><div class="pm-chart-footer"><span><i class="pm-dot pm-down"></i> 下载 <i class="pm-dot pm-up"></i> 上传</span><span id="pm-history-note">正在读取历史…</span></div><p class="pm-note">关闭页面后仍继续采集。每 30 分钟保存，正常关机时补存；突然断电最多丢失最近 30 分钟。</p></article>
-    <article class="pm-panel"><div class="pm-panel-title"><h3>链路健康</h3><span>实时状态</span></div><dl class="pm-health">
-      <div><dt>代理进程</dt><dd id="pm-proxy" class="pm-badge">读取中</dd></div>
-      <div><dt>节点连通性</dt><dd id="pm-health" class="pm-badge">检测中</dd></div>
-      <div><dt>断线保护</dt><dd id="pm-guard" class="pm-badge">读取中</dd></div>
-      <div><dt>系统连接数</dt><dd id="pm-connections">—</dd></div>
-      <div><dt>运行时间</dt><dd id="pm-uptime">—</dd></div>
-    </dl><p id="pm-probe-note" class="pm-note">出口检测约每 30 秒更新，经本地代理访问 Cloudflare。</p></article>
+  <p id="pm-probe-note" class="pm-caption">出口检测经本地代理访问 Cloudflare。</p>
+
+  <section id="pm-device-section" class="pm-panel pm-device-panel" aria-labelledby="pm-devices-heading">
+    <div class="pm-section-head pm-device-head">
+      <div><h3 id="pm-devices-heading">设备流量</h3><span id="pm-device-count" class="pm-caption">正在读取设备…</span></div>
+      <div class="pm-device-controls">
+        <input id="pm-device-search" type="search" placeholder="设备、IP 或 MAC" aria-label="搜索设备" autocomplete="off">
+        <select id="pm-device-sort" aria-label="设备排序方式"><option value="rate">当前速率</option><option value="download">累计下载</option><option value="upload">累计上传</option><option value="name">设备名称</option></select>
+      </div>
+    </div>
+    <div class="pm-table-wrap"><table class="pm-table"><thead><tr><th scope="col">设备</th><th scope="col">IP 地址</th><th scope="col">下载速率</th><th scope="col">上传速率</th><th scope="col">累计下载</th><th scope="col">累计上传</th></tr></thead><tbody id="pm-devices"><tr><td colspan="6" class="pm-empty">正在读取设备…</td></tr></tbody></table></div>
+    <p id="pm-devices-note" class="pm-caption">累计流量从 Bandix 本次启动开始统计。</p>
   </section>
-  <section class="pm-panel"><div class="pm-panel-title"><h3>设备流量</h3><span>外网流量 · 按当前速率排序</span></div>
-    <div class="pm-table-wrap"><table class="pm-table"><thead><tr><th>设备</th><th>IP 地址</th><th>下载速率</th><th>上传速率</th><th>累计下载</th><th>累计上传</th></tr></thead><tbody id="pm-devices"><tr><td colspan="6" class="pm-empty">正在读取设备…</td></tr></tbody></table></div>
-    <p id="pm-devices-note" class="pm-note">累计流量从 Bandix 本次启动开始统计；当前页面不会修改代理或防火墙配置。</p>
-  </section>
-  <div class="pm-footer">PASSWALL 2 · 专用路由器监控<span>实时指标每 2 秒更新 · 历史持续后台采集</span></div>
+  <footer class="pm-footer">
+    <details><summary>历史记录说明</summary><p>流量趋势保留最近 24 小时，关闭页面后继续采集。每 30 分钟保存，正常关机补存；突然断电最多丢失最近 30 分钟。接口累计在接口重建后重新统计。</p></details>
+    <span>实时指标每 2 秒更新</span>
+  </footer>
 </main>
-<script src="<%=resource%>/passwall2/monitor.js?v=6"></script>
+<script src="<%=resource%>/passwall2/monitor-chart.js?v=7.1"></script>
+<script src="<%=resource%>/passwall2/monitor-devices.js?v=7.1"></script>
+<script src="<%=resource%>/passwall2/monitor.js?v=7.1"></script>
 <%+footer%>

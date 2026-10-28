@@ -6,6 +6,8 @@ lua tests/monitor_test.lua
 lua tests/monitor_history_test.lua
 lua tests/monitor_collector_test.lua
 node --check luci-app-passwall2/root/www/luci-static/resources/passwall2/monitor.js
+node --check luci-app-passwall2/root/www/luci-static/resources/passwall2/monitor-chart.js
+node --check luci-app-passwall2/root/www/luci-static/resources/passwall2/monitor-devices.js
 node tests/monitor_dashboard_test.js
 python3 tests/kill_switch_apply_test.py
 python3 tests/package_local_test.py

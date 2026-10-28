@@ -18,4 +18,25 @@ local devices = monitor.devices({status = "success", data = {d = {
 }}})
 assert(#devices == 1 and devices[1].down == 1234 and devices[1].up == 100)
 assert(devices[1].download == 5000 and devices[1].upload == 300)
+
+-- netifd can retain an address briefly after a cable disconnects. Carrier wins.
+local wan = {up = true, l3_device = "eth0", ["ipv4-address"] = {{address = "192.0.2.2"}}, route = {{target = "0.0.0.0", mask = 0, nexthop = "192.0.2.1"}}}
+local files = {["/proc/uptime"] = "123.45 200", ["/proc/sys/kernel/random/boot_id"] = "boot-a\n",
+	["/sys/class/net/eth0/carrier"] = "0", ["/sys/class/net/eth0/speed"] = "-1",
+	["/sys/class/net/eth0/statistics/rx_bytes"] = "10000", ["/sys/class/net/eth0/statistics/tx_bytes"] = "1000"}
+package.loaded["nixio.fs"] = {readfile = function(path) return files[path] end}
+package.loaded["luci.util"] = {ubus = function() return wan end}
+local sample = monitor.traffic_snapshot()
+assert(not sample.wan.up and sample.traffic == nil, "carrier loss must not look connected because the DHCP lease remains")
+files["/sys/class/net/eth0/carrier"] = "1"
+files["/sys/class/net/eth0/speed"] = "1000"
+sample = monitor.traffic_snapshot()
+assert(sample.wan.up and sample.wan.speed == 1000 and sample.traffic.rx == 10000)
+assert(sample.wan.address == "192.0.2.2" and sample.wan.gateway == "192.0.2.1")
+-- Virtual interfaces have byte counters but need not have an Ethernet carrier/speed file.
+wan.l3_device = "pppoe-wan"
+files["/sys/class/net/pppoe-wan/statistics/rx_bytes"] = "12000"
+files["/sys/class/net/pppoe-wan/statistics/tx_bytes"] = "2000"
+sample = monitor.traffic_snapshot()
+assert(sample.wan.up and sample.wan.speed == nil and sample.traffic.device == "pppoe-wan")
 print("Monitor data tests passed")

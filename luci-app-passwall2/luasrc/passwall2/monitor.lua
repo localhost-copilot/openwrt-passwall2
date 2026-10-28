@@ -65,12 +65,20 @@ function M.traffic_snapshot()
 	local wan = require("luci.util").ubus("network.interface.wan", "status", {}) or {}
 	local interface = wan.l3_device or wan.device
 	local traffic
-	if wan.up and type(interface) == "string" and #interface <= 15 and interface:match("^[%w_.:-]+$") then
+	local uplink = {up = wan.up == true, device = interface}
+	local addresses = wan["ipv4-address"] or {}
+	uplink.address = addresses[1] and addresses[1].address
+	for _, route in ipairs(wan.route or {}) do
+		if route.target == "0.0.0.0" and route.mask == 0 then uplink.gateway = route.nexthop; break end
+	end
+	if type(interface) == "string" and #interface <= 15 and interface:match("^[%w_.:-]+$") then
 		local prefix = "/sys/class/net/" .. interface .. "/statistics/"
-		traffic = {device = interface, rx = tonumber(fs.readfile(prefix .. "rx_bytes")), tx = tonumber(fs.readfile(prefix .. "tx_bytes"))}
+		uplink.speed = tonumber(fs.readfile("/sys/class/net/" .. interface .. "/speed"))
+		if tonumber(fs.readfile("/sys/class/net/" .. interface .. "/carrier")) == 0 then uplink.up = false end
+		if uplink.up then traffic = {device = interface, rx = tonumber(fs.readfile(prefix .. "rx_bytes")), tx = tonumber(fs.readfile(prefix .. "tx_bytes"))} end
 	end
 	return {timestamp = os.time(), uptime = tonumber((fs.readfile("/proc/uptime") or ""):match("^[%d.]+")),
-		boot_id = (fs.readfile("/proc/sys/kernel/random/boot_id") or ""):match("[%w-]+"), traffic = traffic}
+		boot_id = (fs.readfile("/proc/sys/kernel/random/boot_id") or ""):match("[%w-]+"), traffic = traffic, wan = uplink}
 end
 
 function M.snapshot()
@@ -86,7 +94,7 @@ function M.snapshot()
 		timestamp = sample.timestamp, uptime = sample.uptime, boot_id = sample.boot_id,
 		cpu = M.cpu(fs.readfile("/proc/stat") or ""), memory = M.memory(fs.readfile("/proc/meminfo") or ""),
 		temperature = tonumber(fs.readfile("/sys/class/thermal/thermal_zone0/temp")),
-		traffic = sample.traffic,
+		traffic = sample.traffic, wan = sample.wan,
 		proxy_running = running(fs), proxy_enabled = global.enabled == "1",
 		guard_enabled = global.kill_switch == "1", guard_active = drops >= 2,
 		node = {name = node.remarks or "未选择节点", core = node.type, protocol = node.protocol},
