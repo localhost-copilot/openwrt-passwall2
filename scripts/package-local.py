@@ -68,7 +68,7 @@ def build(source, checksum, output, translation, compiler):
             for prefix, destination in (("luci-app-passwall2/root/", ""), ("luci-app-passwall2/luasrc/", "usr/lib/lua/luci/")):
                 if name.startswith(prefix):
                     put(data, destination + name[len(prefix):], path.read_bytes(), path.stat().st_mode & 0o777)
-        put(control, "conffiles", control["conffiles"][1] + b"/etc/passwall2/kill-switch.nft\n")
+        put(control, "conffiles", control["conffiles"][1] + b"/etc/passwall2/kill-switch.nft\n/etc/passwall2/monitor-history.json\n")
     lines = control["control"][1].decode().splitlines()
     lines = ["Version: " + VERSION if line.startswith("Version:") else
              "Installed-Size: " + str(sum(len(v[1]) for v in data.values() if v[1] is not None))

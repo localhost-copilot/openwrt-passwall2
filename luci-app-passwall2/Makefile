@@ -125,6 +125,7 @@ define Package/$(PKG_NAME)/conffiles
 /etc/config/passwall2
 /etc/config/passwall2_server
 /etc/passwall2/kill-switch.nft
+/etc/passwall2/monitor-history.json
 /usr/share/passwall2/direct_ip
 /usr/share/passwall2/domains_excluded
 endef

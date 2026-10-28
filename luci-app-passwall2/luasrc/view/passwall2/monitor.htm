@@ -1,6 +1,6 @@
 <%+header%>
-<link rel="stylesheet" href="<%=resource%>/passwall2/monitor.css?v=5">
-<main id="pw-monitor" data-status-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_status')%>" data-probe-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_probe')%>" data-devices-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_devices')%>">
+<link rel="stylesheet" href="<%=resource%>/passwall2/monitor.css?v=6">
+<main id="pw-monitor" data-status-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_status')%>" data-probe-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_probe')%>" data-devices-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_devices')%>" data-history-url="<%=luci.dispatcher.build_url('admin','services','passwall2','monitor_history')%>">
   <div class="pm-heading">
     <div><div class="pm-eyebrow">PASSWALL 2 / NETWORK MONITOR</div><h2>链路总览<span class="pm-live">LIVE</span></h2><p>连接状态、流量与出口，一眼看清。</p></div>
     <div class="pm-refresh"><span id="pm-updated">正在连接路由器…</span><button type="button" id="pm-refresh">刷新数据 ↻</button></div>
@@ -18,7 +18,7 @@
     <article class="pm-card"><span class="pm-label">内存使用</span><div class="pm-value"><b id="pm-memory">—</b><span>%</span></div><small id="pm-memory-detail">读取中…</small></article>
   </section>
   <section class="pm-middle">
-    <article class="pm-panel pm-chart-panel"><div class="pm-panel-title"><h3>流量趋势</h3><span id="pm-interface">最近 2 分钟</span></div><div class="pm-chart"><canvas id="pm-chart" role="img" aria-label="最近两分钟 WAN 下载与上传速率曲线"></canvas></div><div class="pm-chart-footer"><span><i class="pm-dot pm-down"></i> 下载 <i class="pm-dot pm-up"></i> 上传</span><span>每 2 秒采样 · 页面打开期间</span></div></article>
+    <article class="pm-panel pm-chart-panel"><div class="pm-panel-title"><h3>流量趋势</h3><select id="pm-range" aria-label="流量历史时间范围"><option value="600">最近 10 分钟</option><option value="3600" selected>最近 1 小时</option><option value="86400">最近 24 小时</option></select></div><p id="pm-interface" class="pm-note">分钟平均速率</p><div class="pm-chart"><canvas id="pm-chart" role="img" aria-label="WAN 下载与上传历史速率曲线"></canvas></div><div class="pm-chart-footer"><span><i class="pm-dot pm-down"></i> 下载 <i class="pm-dot pm-up"></i> 上传</span><span id="pm-history-note">正在读取历史…</span></div><p class="pm-note">关闭页面后仍继续采集。每 30 分钟保存，正常关机时补存；突然断电最多丢失最近 30 分钟。</p></article>
     <article class="pm-panel"><div class="pm-panel-title"><h3>链路健康</h3><span>实时状态</span></div><dl class="pm-health">
       <div><dt>代理进程</dt><dd id="pm-proxy" class="pm-badge">读取中</dd></div>
       <div><dt>节点连通性</dt><dd id="pm-health" class="pm-badge">检测中</dd></div>
@@ -31,7 +31,7 @@
     <div class="pm-table-wrap"><table class="pm-table"><thead><tr><th>设备</th><th>IP 地址</th><th>下载速率</th><th>上传速率</th><th>累计下载</th><th>累计上传</th></tr></thead><tbody id="pm-devices"><tr><td colspan="6" class="pm-empty">正在读取设备…</td></tr></tbody></table></div>
     <p id="pm-devices-note" class="pm-note">累计流量从 Bandix 本次启动开始统计；当前页面不会修改代理或防火墙配置。</p>
   </section>
-  <div class="pm-footer">PASSWALL 2 · 专用路由器监控<span>切换到后台时暂停采样</span></div>
+  <div class="pm-footer">PASSWALL 2 · 专用路由器监控<span>实时指标每 2 秒更新 · 历史持续后台采集</span></div>
 </main>
-<script src="<%=resource%>/passwall2/monitor.js?v=5.1"></script>
+<script src="<%=resource%>/passwall2/monitor.js?v=6"></script>
 <%+footer%>

@@ -144,6 +144,8 @@ Selected during installation based on your needs:
 - **HAProxy** The Reliable, High Performance TCP/HTTP Load Balancer
 
 ### Traffic Management
+
+The router dashboard keeps bounded WAN traffic history across page refreshes and restarts. See [monitor history and storage limits](docs/monitor-history.md).
 - **Load Balancing**: Distribute traffic across multiple nodes
 - **Smart Routing**: Domain-based and geo-based routing rules
 - **DNS Control**: Advanced DNS filtering and DoH/DoT support

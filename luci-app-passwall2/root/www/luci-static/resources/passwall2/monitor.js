@@ -29,6 +29,8 @@
     lastProbe = null;
   let snapshotTimer, probeTimer, snapshotRequest, probeRequest;
   let devicesTimer, devicesRequest;
+  let historyTimer, historyRequest;
+  let chartSeconds = Number(el("range").value);
   const canvas = el("chart");
 
   function chart() {
@@ -46,10 +48,11 @@
       right = w - 8,
       top = 12,
       bottom = h - 22;
-    const end = history.length ? history[history.length - 1].time : 0;
+    const end = lastSnapshot ? lastSnapshot.timestamp : Date.now() / 1000;
+    const visible = history.filter((p) => p.time >= end - chartSeconds && p.time <= end);
     const peak = Math.max(
       1,
-      ...history.map((p) => (Math.max(p.down || 0, p.up || 0) * 8) / 1e6),
+      ...visible.map((p) => (Math.max(p.down || 0, p.up || 0) * 8) / 1e6),
     );
     const scale = Math.ceil(peak * 1.15);
     ctx.font = "10px system-ui";
@@ -65,7 +68,7 @@
       ctx.fillText((scale * (1 - i / 4)).toFixed(scale < 4 ? 1 : 0), 1, y + 3);
     }
     ctx.fillText("Mbps", 0, h - 4);
-    ctx.fillText("−2 分钟", left, h - 4);
+    ctx.fillText(chartSeconds < 3600 ? "−10 分钟" : "−" + chartSeconds / 3600 + " 小时", left, h - 4);
     ctx.fillText("现在", Math.max(left, right - 22), h - 4);
     for (const [key, stroke] of [
       ["down", color("down")],
@@ -75,12 +78,15 @@
       ctx.lineWidth = 2;
       ctx.beginPath();
       let drawing = false;
-      for (const point of history) {
+      let previousTime = null;
+      for (const point of visible) {
+        if (point.gap || (previousTime !== null && point.time - previousTime > 90)) drawing = false;
+        previousTime = point.time;
         if (!number(point[key])) {
           drawing = false;
           continue;
         }
-        const x = left + ((point.time - end + 120) / 120) * (right - left);
+        const x = left + ((point.time - end + chartSeconds) / chartSeconds) * (right - left);
         const y = bottom - ((point[key] * 8) / 1e6 / scale) * (bottom - top);
         if (drawing) ctx.lineTo(x, y);
         else ctx.moveTo(x, y);
@@ -178,7 +184,7 @@
       up = null,
       cpu = null;
     const dt = previous && data.uptime - previous.uptime;
-    if (previous && dt > 0 && dt < 15) {
+    if (previous && data.boot_id === previous.boot_id && dt > 0 && dt < 15) {
       if (
         data.traffic &&
         previous.traffic &&
@@ -198,11 +204,7 @@
           cpu = Math.min(100, Math.max(0, 100 * (1 - idle / total)));
       }
     }
-    // A reboot changes the counter epoch; do not connect its graph to old data.
-    if (previous && data.uptime < previous.uptime) history = [];
     previous = data;
-    history.push({ time: data.uptime, down, up });
-    history = history.filter((p) => p.time >= data.uptime - 120).slice(-90);
     text("download", mbps(down));
     text("upload", mbps(up));
     text("cpu", number(cpu) ? cpu.toFixed(1) : "—");
@@ -229,7 +231,7 @@
     text(
       "interface",
       data.traffic
-        ? data.traffic.device + " · 最近 2 分钟"
+        ? data.traffic.device + " · 分钟平均速率"
         : "WAN 接口暂不可用",
     );
     badge(
@@ -332,6 +334,27 @@
       if (!document.hidden) devicesTimer = setTimeout(sampleDevices, 5000);
     }
   }
+  async function sampleHistory() {
+    if (document.hidden || historyRequest) return;
+    clearTimeout(historyTimer);
+    historyRequest = new AbortController();
+    try {
+      const data = await request(root.dataset.historyUrl, historyRequest);
+      history = (Array.isArray(data.points) ? data.points : []).map((p) => ({
+        time: p[0], down: p[1] >= 0 ? p[1] : null,
+        up: p[2] >= 0 ? p[2] : null, gap: p[3] === 1,
+      }));
+      text("history-note", data.collecting
+        ? "后台采集中 · 每分钟汇总 · 保留最近 24 小时"
+        : "后台采集未更新 · 当前展示已保存的历史");
+      chart();
+    } catch (_) {
+      if (!document.hidden) text("history-note", "历史更新中断 · 保留上次数据");
+    } finally {
+      historyRequest = null;
+      if (!document.hidden) historyTimer = setTimeout(sampleHistory, 30000);
+    }
+  }
   async function check() {
     if (document.hidden || probeRequest) return;
     clearTimeout(probeTimer);
@@ -357,20 +380,28 @@
     sample();
     check();
     sampleDevices();
+    sampleHistory();
+  });
+  el("range").addEventListener("change", () => {
+    chartSeconds = Number(el("range").value);
+    chart();
   });
   document.addEventListener("visibilitychange", () => {
     clearTimeout(snapshotTimer);
     clearTimeout(probeTimer);
     clearTimeout(devicesTimer);
+    clearTimeout(historyTimer);
     previous = null;
     if (document.hidden) {
       if (snapshotRequest) snapshotRequest.abort();
       if (probeRequest) probeRequest.abort();
       if (devicesRequest) devicesRequest.abort();
+      if (historyRequest) historyRequest.abort();
     } else {
       sample();
       check();
       sampleDevices();
+      sampleHistory();
     }
   });
   window.addEventListener("pagehide", () => {
@@ -378,9 +409,11 @@
     clearTimeout(snapshotTimer);
     clearTimeout(probeTimer);
     clearTimeout(devicesTimer);
+    clearTimeout(historyTimer);
     if (snapshotRequest) snapshotRequest.abort();
     if (probeRequest) probeRequest.abort();
     if (devicesRequest) devicesRequest.abort();
+    if (historyRequest) historyRequest.abort();
   });
   new ResizeObserver(chart).observe(canvas.parentElement);
   // Aurora changes data-darkmode for both manual and device theme switching.
@@ -398,4 +431,5 @@
   sample();
   check();
   sampleDevices();
+  sampleHistory();
 })();

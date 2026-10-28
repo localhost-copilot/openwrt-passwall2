@@ -34,6 +34,8 @@ uci commit firewall
 
 chmod +x /usr/share/passwall2/*.sh
 /etc/init.d/passwall2_guard enable
+/etc/init.d/passwall2_history enable
+/etc/init.d/passwall2_history start
 /usr/share/passwall2/kill_switch.sh || logger -t passwall2 "Kill switch policy requires attention"
 
 rm -f /tmp/etc/passwall2_tmp/passwall2_version /tmp/luci-indexcache /tmp/luci-indexcache.*

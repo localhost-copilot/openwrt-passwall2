@@ -87,7 +87,8 @@
   font-size: 12px;
   color: var(--pm-muted);
 }
-#pw-monitor button {
+#pw-monitor button,
+#pw-monitor select {
   background: var(--pm-control);
   border: 1px solid var(--pm-line);
   color: var(--pm-text);

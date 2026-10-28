@@ -37,6 +37,7 @@ function index()
 	entry({"admin", "services", appname, "monitor_status"}, call("monitor_status")).leaf = true
 	entry({"admin", "services", appname, "monitor_probe"}, call("monitor_probe")).leaf = true
 	entry({"admin", "services", appname, "monitor_devices"}, call("monitor_devices")).leaf = true
+	entry({"admin", "services", appname, "monitor_history"}, call("monitor_history")).leaf = true
 	entry({"admin", "services", appname, "settings"}, cbi(appname .. "/client/global"), _("Basic Settings"), 1).dependent = true
 	entry({"admin", "services", appname, "node_list"}, cbi(appname .. "/client/node_list"), _("Node List"), 2).dependent = true
 	entry({"admin", "services", appname, "node_subscribe"}, cbi(appname .. "/client/node_subscribe"), _("Node Subscribe"), 3).dependent = true
@@ -296,6 +297,11 @@ end
 function monitor_devices()
 	http.header("Cache-Control", "no-store")
 	http_write_json(require("luci.passwall2.monitor").device_snapshot())
+end
+
+function monitor_history()
+	http.header("Cache-Control", "no-store")
+	http_write_json(require("luci.passwall2.monitor").history())
 end
 
 function index_status()

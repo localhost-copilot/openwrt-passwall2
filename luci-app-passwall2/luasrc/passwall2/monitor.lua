@@ -60,32 +60,49 @@ local function running(fs)
 	return false
 end
 
+function M.traffic_snapshot()
+	local fs = require "nixio.fs"
+	local wan = require("luci.util").ubus("network.interface.wan", "status", {}) or {}
+	local interface = wan.l3_device or wan.device
+	local traffic
+	if wan.up and type(interface) == "string" and #interface <= 15 and interface:match("^[%w_.:-]+$") then
+		local prefix = "/sys/class/net/" .. interface .. "/statistics/"
+		traffic = {device = interface, rx = tonumber(fs.readfile(prefix .. "rx_bytes")), tx = tonumber(fs.readfile(prefix .. "tx_bytes"))}
+	end
+	return {timestamp = os.time(), uptime = tonumber((fs.readfile("/proc/uptime") or ""):match("^[%d.]+")),
+		boot_id = (fs.readfile("/proc/sys/kernel/random/boot_id") or ""):match("[%w-]+"), traffic = traffic}
+end
+
 function M.snapshot()
 	local fs = require "nixio.fs"
 	local sys = require "luci.sys"
 	local uci = require("uci").cursor()
 	local global = uci:get_all("passwall2", "@global[0]") or {}
 	local node = global.node and uci:get_all("passwall2", global.node) or {}
-	local wan = require("luci.util").ubus("network.interface.wan", "status", {}) or {}
-	local interface = wan.l3_device or wan.device
-	local traffic
-	if type(interface) == "string" and #interface <= 15 and interface:match("^[%w_.:-]+$") then
-		local prefix = "/sys/class/net/" .. interface .. "/statistics/"
-		traffic = {device = interface, rx = tonumber(fs.readfile(prefix .. "rx_bytes")), tx = tonumber(fs.readfile(prefix .. "tx_bytes"))}
-	end
+	local sample = M.traffic_snapshot()
 	local guard = sys.exec("nft list table inet passwall2_guard 2>/dev/null")
 	local _, drops = guard:gsub("policy drop", "")
 	return {
-		timestamp = os.time(), uptime = tonumber((fs.readfile("/proc/uptime") or ""):match("^[%d.]+")),
+		timestamp = sample.timestamp, uptime = sample.uptime, boot_id = sample.boot_id,
 		cpu = M.cpu(fs.readfile("/proc/stat") or ""), memory = M.memory(fs.readfile("/proc/meminfo") or ""),
 		temperature = tonumber(fs.readfile("/sys/class/thermal/thermal_zone0/temp")),
-		traffic = traffic,
+		traffic = sample.traffic,
 		proxy_running = running(fs), proxy_enabled = global.enabled == "1",
 		guard_enabled = global.kill_switch == "1", guard_active = drops >= 2,
 		node = {name = node.remarks or "未选择节点", core = node.type, protocol = node.protocol},
 		connections = tonumber(fs.readfile("/proc/sys/net/netfilter/nf_conntrack_count")),
 		connections_max = tonumber(fs.readfile("/proc/sys/net/netfilter/nf_conntrack_max"))
 	}
+end
+
+function M.history()
+	local history = require "luci.passwall2.monitor_history"
+	local document = history.read("/tmp/passwall2-monitor/history.json") or history.read("/etc/passwall2/monitor-history.json") or {points = {}}
+	local sample = M.traffic_snapshot()
+	document.collecting = document.boot_id == sample.boot_id and type(document.sample_uptime) == "number" and sample.uptime ~= nil
+		and sample.uptime >= document.sample_uptime and sample.uptime - document.sample_uptime <= 30
+	document.interval, document.retention = history.interval, history.retention
+	return document
 end
 
 function M.device_snapshot()
