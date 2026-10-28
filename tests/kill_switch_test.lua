@@ -44,4 +44,34 @@ contains(extra, "udp dport 51820 accept")
 local disabled = assert(policy.render({enabled = "0"}))
 contains(disabled, "delete table inet passwall2_guard")
 absent(disabled, "policy drop")
+
+-- A home uplink exception permits only the two explicit private networks.
+local home_route = {lan_device = "br-lan", lan_subnet = "192.168.6.0/24",
+	uplink_device = "eth0", uplink_subnet = "192.168.50.0/24"}
+local home = assert(policy.render({enabled = "1", local_routes = {home_route}}))
+contains(home, 'iifname "br-lan" oifname "eth0" ip saddr 192.168.6.0/24 ip daddr 192.168.50.0/24 counter accept')
+contains(home, 'iifname "eth0" oifname "br-lan" ip saddr 192.168.50.0/24 ip daddr 192.168.6.0/24 counter accept')
+absent(home, "ct state established")
+local output = home:match("chain output (.*)")
+absent(output, "192.168.50.0/24") -- Router DNS and other output remain fail-closed.
+for _, subnet in ipairs({"0.0.0.0/0", "192.0.0.0/8", "192.168.50.1/24", "192.168.50.0/33",
+	"192.168.50.0/24; accept", "8.8.8.0/24", "192.168.6.0/24", "192.168.0.0/16", "::/0",
+	"10.0.0.0/7", "172.16.0.0/11", "172.15.0.0/16", "172.32.0.0/16", "192.168.0.0/15"}) do
+	home_route.uplink_subnet = subnet
+	assert(not policy.render({enabled = "1", local_routes = {home_route}}), subnet)
+end
+home_route.uplink_subnet = "192.168.50.0/24"
+for _, device in ipairs({"lo", "br-lan", 'eth0" accept; #'}) do
+	home_route.uplink_device = device
+	assert(not policy.render({enabled = "1", local_routes = {home_route}}), device)
+end
+home_route.uplink_device = "eth0"
+home_route.lan_device = "untrusted"
+assert(not policy.render({enabled = "1", local_routes = {home_route}}))
+assert(not policy.render({enabled = "1", local_routes = {false}}))
+assert(not policy.render({enabled = "1", local_routes = "invalid"}))
+for _, subnets in ipairs({{"10.0.0.0/8", "172.16.0.0/12"}, {"192.168.6.170/32", "192.168.50.1/32"}}) do
+	assert(policy.render({enabled = "1", local_routes = {{lan_device = "br-lan", uplink_device = "eth0",
+		lan_subnet = subnets[1], uplink_subnet = subnets[2]}}}))
+end
 print("Kill switch policy tests passed")

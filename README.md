@@ -179,6 +179,9 @@ Selected during installation based on your needs:
 4. **Apply Configuration:**
    - Click `Save & Apply`
 
+For a travel router that needs access from a separate home subnet while the
+kill switch is enabled, see [local routing configuration](docs/kill-switch-lan-routing.md).
+
 ## 🌐 Language Support
 
 PassWall2 supports multiple languages:

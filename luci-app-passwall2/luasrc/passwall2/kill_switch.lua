@@ -17,18 +17,65 @@ local function list(value)
 	return {}
 end
 
+local function device_name(value)
+	return type(value) == "string" and #value <= 15 and value:match("^[%w_.:-]+$") and value ~= "lo"
+end
+
+-- Only complete RFC1918 subnets may bypass the proxy; reject host bits and
+-- supernets that would also admit public Internet destinations.
+local function private_subnet(value)
+	if type(value) ~= "string" then return end
+	local address, prefix = value:match("^([%d.]+)/(%d+)$")
+	prefix = tonumber(prefix)
+	if not ipv4(address) or not prefix or prefix < 1 or prefix > 32 then return end
+	local first, octets = 0, {}
+	for part in address:gmatch("%d+") do
+		octets[#octets + 1] = tonumber(part)
+		first = first * 256 + tonumber(part)
+	end
+	local size = 2 ^ (32 - prefix)
+	if first % size ~= 0 then return end
+	if (octets[1] == 10 and prefix >= 8)
+		or (octets[1] == 172 and octets[2] >= 16 and octets[2] <= 31 and prefix >= 12)
+		or (octets[1] == 192 and octets[2] == 168 and prefix >= 16) then
+		return first, first + size - 1
+	end
+end
+
 function M.render(config)
 	local lines = {"add table inet passwall2_guard", "delete table inet passwall2_guard"}
 	if config.enabled == nil or config.enabled == "0" then return table.concat(lines, "\n") .. "\n" end
 	if config.enabled ~= "1" then return nil, "Invalid kill switch setting" end
 	local devices = list(config.devices)
 	if #devices == 0 then devices = {"br-lan"} end
-	local quoted = {}
+	local quoted, trusted = {}, {}
 	for _, device in ipairs(devices) do
-		if type(device) ~= "string" or #device > 15 or not device:match("^[%w_.:-]+$") or device == "lo" then
+		if not device_name(device) then
 			return nil, "Invalid trusted LAN device"
 		end
 		quoted[#quoted + 1] = string.format('%q', device)
+		trusted[device] = true
+	end
+	local local_routes = config.local_routes or {}
+	if type(local_routes) ~= "table" then return nil, "Invalid local routes" end
+	local forwarding = {}
+	for _, route in ipairs(local_routes) do
+		if type(route) ~= "table" or not trusted[route.lan_device] or not device_name(route.uplink_device)
+			or trusted[route.uplink_device] then
+			return nil, "Invalid local route devices"
+		end
+		local lan_first, lan_last = private_subnet(route.lan_subnet)
+		local uplink_first, uplink_last = private_subnet(route.uplink_subnet)
+		if not lan_first or not uplink_first or (lan_first <= uplink_last and uplink_first <= lan_last) then
+			return nil, "Local routes require non-overlapping private IPv4 subnets"
+		end
+		local function direction(input, output, source, destination)
+			forwarding[#forwarding + 1] = string.format(
+				'        iifname %q oifname %q ip saddr %s ip daddr %s counter accept',
+				input, output, source, destination)
+		end
+		direction(route.lan_device, route.uplink_device, route.lan_subnet, route.uplink_subnet)
+		direction(route.uplink_device, route.lan_device, route.uplink_subnet, route.lan_subnet)
 	end
 	local endpoints, seen = {}, {}
 	local function endpoint(protocol, address, port)
@@ -60,6 +107,7 @@ function M.render(config)
 	lines[#lines + 1] = "    chain forward {"
 	lines[#lines + 1] = "        type filter hook forward priority -10; policy drop;"
 	lines[#lines + 1] = "        iifname " .. lan .. " oifname " .. lan .. " accept"
+	for _, rule in ipairs(forwarding) do lines[#lines + 1] = rule end
 	lines[#lines + 1] = "    }"
 	lines[#lines + 1] = "    chain output {"
 	lines[#lines + 1] = "        type filter hook output priority -10; policy drop;"
