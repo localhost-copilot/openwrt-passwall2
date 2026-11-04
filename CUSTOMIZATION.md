@@ -1,8 +1,9 @@
-# Private PassWall2 customization
+# PassWall2 customization
 
 This repository retains the upstream history and GPL-3.0 license from
 https://github.com/Openwrt-Passwall/openwrt-passwall2. It is an independent
-private repository, not a GitHub fork-network member. No deployment secrets
+public repository at https://github.com/localhost-copilot/openwrt-passwall2,
+not a GitHub fork-network member. No deployment secrets
 or machine backups belong here.
 
 ## Dedicated-router kill switch
@@ -86,8 +87,8 @@ kernel packet-filter behavior.
 
 Fetch upstream with `git fetch upstream --tags`, merge `upstream/main`, and
 rerun checks. Keep customization commits separate. The inherited SDK build
-workflow is manually triggered; it must use authenticated checkout when
-building this private source. Do not make the repository public to build it.
+workflow is manually triggered and checks out this repository's source.
+Public builds do not need a deploy key or personal access token.
 
 ## Local package build
 

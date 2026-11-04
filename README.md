@@ -1,5 +1,11 @@
 # PassWall2
 
+This public customization is maintained at
+[localhost-copilot/openwrt-passwall2](https://github.com/localhost-copilot/openwrt-passwall2).
+It retains the upstream history and GPL-3.0 license. See
+[customization notes](CUSTOMIZATION.md) for the dedicated-router kill switch,
+monitoring and development checks.
+
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![OpenWrt](https://img.shields.io/badge/OpenWrt-21.02%2B-blue)](https://openwrt.org/)
 [![LuCI](https://img.shields.io/badge/LuCI-17.01%2B-green)](https://github.com/openwrt/luci)

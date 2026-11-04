@@ -93,7 +93,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - name: Checkout private package source
+      - name: Checkout package source
         uses: actions/checkout@v4
         with:
           path: passwall2-source
@@ -286,7 +286,7 @@ jobs:
           - platform: mipsel_mips32
             url_sdk: https://downloads.openwrt.org/snapshots/targets/bcm47xx/generic/openwrt-sdk-bcm47xx-generic_gcc-14.4.0_musl.Linux-x86_64.tar.zst
     steps:
-      - name: Checkout private package source
+      - name: Checkout package source
         uses: actions/checkout@v4
         with:
           path: passwall2-source
